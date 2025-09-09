@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <link rel="stylesheet" href="{% static 'css/usermanagement.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+        User Management
+    </h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>CNIC</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Status</th>
+                <th>Action</th>
+                <th>Date Joined</th>
+            </tr>
+        </thead>
+       <tbody>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.cnic }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.mobile }}</td>
+        <td>
+            {% if user.is_blocked %}
+                Blocked
+            {% elif user.is_suspended %}
+                Suspended
+            {% else %}
+                Active
+            {% endif %}
+        </td>
+       <td>
+    <a href="{% url 'activateuser' user.id %}" class="btn activate">Activate</a>
+    <a href="{% url 'blockuser' user.id %}" class="btn block">Block</a>
+    <a href="{% url 'deleteuser' user.id %}" class="btn delete">Delete</a>
+</td>
+        <td>{{ user.date_joined }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+    
+    </table>
+</div>

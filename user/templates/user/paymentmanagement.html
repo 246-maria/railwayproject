@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Management</title>
+    <link rel="stylesheet" href="{% static 'css/paymentmanagement.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: auto;
+            margin-top: 2%;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: green;
+            border-bottom: 2px solid green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            background-color: white;
+        }
+
+        .table th {
+            background-color: darkgreen;
+            color: white;
+        }
+
+        .btn-info {
+            background-color: darkgreen;
+            border-color: darkgreen;
+            color: wite;
+        }
+        .btn-info:hover
+        {
+           background-color: green;
+           color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Payment Management</h2>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h4>Pending Payments</h4>
+    <table border="1" cellpadding="8" cellspacing="0" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Travel Date</th>
+                <th>Total Fare</th>
+                <th>Payment Screenshot</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in pending_payments %}
+            <tr>
+                <td>{{ payment.booking.user.full_name }}</td>
+                <td>{{ payment.booking.from_station }}</td>
+                <td>{{ payment.booking.to_station }}</td>
+                <td>{{ payment.booking.train.travel_date }}</td>
+                <td>{{ payment.amount }}</td>
+                <td><a href="{{ payment.payment_screenshot.url }}">View Screenshot</a></td>
+                <td>{{ payment.status }}</td>
+                <td>
+                    <a href="{% url 'approve_or_reject_booking' booking_id=payment.booking.id action='approve' %}" class="btn btn-success btn-sm">Approve</a>
+                    <a href="{% url 'approve_or_reject_booking' booking_id=payment.booking.id action='reject' %}" class="btn btn-danger btn-sm">Reject</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">No pending payments found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Refunds Due</h4>
+    <table border="1" cellpadding="8" cellspacing="0" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Booking ID</th>
+                <th>Original Fare</th>
+                <th>Refund Amount</th>
+                <th>Payment Method</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in refund_eligible_bookings %}
+            <tr>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.total_fare }}</td>
+                <td>{{ booking.refund_amount }}</td>
+                <td>{{ booking.payment.payment_method }}</td>
+                <td>
+                    <form action="{% url 'process_refund' booking_id=booking.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-info btn-sm">Process Refund</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No refunds are currently due.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

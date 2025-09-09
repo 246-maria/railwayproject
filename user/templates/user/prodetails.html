@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/prodetails.css' %}?v=3">
+    <title>Profile Details</title>
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpg' %}" alt="Logo" class="logo-img">
+            Railway Reservation -User Panel
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'prodetails' %}">👤</a>
+            <div class="bell-container">
+               <a href="{% url 'notification' %}" title="Notifications">🔔</a>
+               <span id="notification-badge" class="notification-badge">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="profile-card">
+            <h2>User Profile Details</h2>
+            <div class="profile-detail"><span class="label">Full Name:</span> {{ user.full_name }}</div>
+            <div class="profile-detail"><span class="label">Email:</span> {{ user.email }}</div>
+            <div class="profile-detail"><span class="label">Mobile No:</span> {{ user.mobile }}</div>
+            <div class="profile-detail"><span class="label">CNIC:</span> {{ user.cnic }}</div>
+            <div class="profile-detail"><span class="label">Joining Date:{{user.date_joined}}</span></div>
+        </div>
+
+        <div class="button-group">
+            <button id="logoutButton" class="confirm-btn">Logout</button>
+            <button id="deleteAccountBtn" class="btn-delete">Delete Account</button>
+        </div>
+
+        <div id="logoutModal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <p class="modal-message">Are you sure you want to logout from your account?</p>
+                <div class="modal-buttons">
+                    <a href="{% url 'index' %}" class="btn confirm-btn">Logout</a>
+                    <button id="cancelLogout" class="btn cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="deleteModal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <form id="deleteForm" method="post" action="{% url 'delete_account' %}">
+                    {% csrf_token %}
+                    <p class="modal-message">Are you sure you want to <b>Permanently delete</b> your account?</p>
+                    <div class="form-group">
+                        <label for="password"><b>Enter your password to confirm:</b></label>
+                        <input type="password" id="password" name="password" required>
+                    </div><br>
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn btn-danger">Yes, Delete My Account</button>
+                        <button type="button" id="cancelDelete" class="btn cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const logoutButton = document.getElementById('logoutButton');
+            const logoutModal = document.getElementById('logoutModal');
+            const cancelLogout = document.getElementById('cancelLogout');
+
+            const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+            const deleteModal = document.getElementById('deleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDelete');
+
+            logoutButton.addEventListener('click', function() {
+                logoutModal.classList.remove('hidden');
+            });
+
+            cancelLogout.addEventListener('click', function() {
+                logoutModal.classList.add('hidden');
+            });
+
+            deleteAccountBtn.addEventListener('click', function() {
+                deleteModal.classList.remove('hidden');
+            });
+
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteModal.classList.add('hidden');
+            });
+
+            function updateNotifications() {
+                fetch("{% url 'unread_notifications_count' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.getElementById('notification-badge');
+                        if (data.count > 0) {
+                            badge.innerText = data.count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching notifications:', error));
+            }
+            document.addEventListener('DOMContentLoaded', updateNotifications);
+            setInterval(updateNotifications, 10000);
+        });
+    </script>
+</body>
+</html>

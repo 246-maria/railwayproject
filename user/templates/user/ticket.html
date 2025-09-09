@@ -1,0 +1,292 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generated E-Ticket</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .ticket-container {
+            width: 650px;
+            height: 500px;
+            background-color: white;
+            border: 1px solid #000000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-image: url("{% static 'images/logo.jpg' %}");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: 50%;
+        }
+        .ticket-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 1;
+        }
+        
+        .header-section, .train-info-section, .details-table, .footer-section {
+            position: relative;
+            z-index: 2;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 10px;
+            border-bottom: 2px solid darkgreen;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .header-left img {
+            height: 40px;
+        }
+        .header-left span {
+            margin-left: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: darkgreen;
+        }
+        .header-right {
+            text-align: right;
+            font-size: 12px;
+            color: black;
+            line-height: 1.4;
+        }
+        .header-right p {
+            margin: 0;
+        }
+        .train-info-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 2px solid darkgreen;
+        }
+        .train-info-section p:first-child {
+            font-size: 18px;
+            font-weight: bold;
+            color: green;
+            margin: 0;
+        }
+        .train-info-section p:last-child {
+            font-size: 16px;
+            font-weight: bold;
+            color: black;
+            margin: 0;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 50px;
+            font-size: 14px;
+        }
+        .details-table th, .details-table td {
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+        }
+        .details-table th {
+            text-align: left;
+            background-color: darkgreen;
+            color: white;
+        }
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            border-top: 2px solid darkgreen;
+            padding-top: 10px;
+        }
+        .footer-section a {
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .footer-section a:hover {
+            text-decoration: underline;
+        }
+        .footer-section .powered-by {
+            font-size: 12px;
+            color: black;
+            margin-top: 5px;
+            display: block;
+        }
+        .footer-section .email-link {
+            color: #2563eb;
+        }
+        .footer-section .whatsapp-link {
+            color: #16a34a;
+        }
+        .button-group {
+    display: flex;
+    justify-content: center;   
+    gap: 15px;                 
+    margin-top: 15px;
+}
+        .print-btn {
+            background-color: darkgreen;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 20px auto 0;
+            display: table;
+        }
+        .print-btn:hover {
+            background-color: green;
+        }
+        .back-btn {
+            background-color: darkgreen;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 20px auto 0;
+            display: table;
+        }
+        .back-btn:hover {
+            background-color: green;
+        }
+        .no-ticket-message {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d32f2f;
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        @media print {
+            body {
+                background: none;
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+            body > * {
+                display: none;
+            }
+            .ticket-container {
+                display: block;
+                position: static;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 20px;
+                border: none;
+                box-shadow: none;
+                background-image: none;
+            }
+            .ticket-container::before {
+                display: none;
+            }
+            .no-ticket-message {
+                display: none; 
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if booking %}
+        <div class="ticket-container">
+            <div class="header-section">
+                <div class="header-left">
+                    <img src="{% static 'images/logo.jpg' %}" alt="Pakistan Railways Logo">
+                    <span>Generated E-Ticket</span>
+                </div>
+                <div class="header-right">
+                    <p>Railway Reservation System</p>
+                    <p>Travel Date: {{ booking.train.travel_date|date:"d M Y" }} {{booking.train.departure_time|time:"h:i A"}}</p>
+                    <p>{{booking.travel_class}}({{booking.train.train_number}})</p>
+                    <p>Ticket No: {{ticket.ticket_number}}</p>
+                </div>
+            </div>
+
+            <div class="train-info-section">
+                <div>
+                    <p>{{ booking.train.train_name}}</p>
+                    <p>{{ booking.from_station }} TO {{ booking.to_station }}</p>
+                </div>
+            </div>
+
+            <table class="details-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>CNIC</th>
+                        <th>Mobile No</th>
+                        <th>Ticket Number</th>
+                        <th>Fare</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ booking.user.full_name }}</td>
+                        <td>{{ booking.user.cnic }}</td>
+                        <td>{{ booking.user.mobile }}</td>
+                        <td>{{ ticket.ticket_number }}</td>
+                        <td>Rs. {{ booking.total_fare}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer-section">
+                <div>
+                    <div>
+                        <a href="mailto:railwayreservationsystem591@gmail.com?subject=Ticket Inquiry&body=Hello, I need help with my booking."
+                           class="email-link">
+                            Email Us: railwayreservationsystem591@gmail.com
+                        </a>
+                        <br>
+                        <a href="https://wa.me/+923400554173?text=Hello, I need help with my train ticket booking."
+                           target="_blank"
+                           class="whatsapp-link">
+                            WhatsApp +92 3400554173
+                        </a>
+                    </div>
+                    <span class="powered-by">Powered by: railwayreservation.com</span>
+                </div>
+            </div>
+        </div>
+       <div class="button-group">
+    <a href="javascript:window.print()" class="print-btn">Print Ticket</a>
+    <a href="{% url 'profile' %}" class="back-btn">Back to Profile</a>
+</div>
+
+
+    {% else %}
+        <div class="no-ticket-message">
+            <p>No ticket found. Please check your booking details.</p>
+        </div>
+    {% endif %}
+</body>
+</html>

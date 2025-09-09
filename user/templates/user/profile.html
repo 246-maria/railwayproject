@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f4f4f4;
+            transition: background-image 1s ease-in-out; 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff; 
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: darkgreen; 
+            padding: 25px 30px;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .navbar .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .navbar .logo img {
+            width: 40px;
+            height: auto;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .navbar .nav-links {
+            list-style: none;
+            display: flex;
+
+            margin: 0;
+            padding: 0;
+
+        }
+        .navbar .nav-links li {
+            position: relative;
+        }
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        .navbar .nav-links a:hover {
+            background-color: green;
+        }
+        .navbar .nav-links .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #4CAF50;
+            min-width: 160px;
+            z-index: 1000;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        }
+        .navbar .nav-links li:hover .dropdown-menu {
+            display: block;
+        }
+        .navbar .nav-links .dropdown-menu a {
+            padding: 12px 16px;
+            color: white;
+        }
+        .user-icons {
+            display: flex;
+            align-items: center;
+            
+        }
+        .user-icons .icon-link {
+            position: relative;
+            color: white;
+            font-size: 1.2em;
+            margin-left: 20px;
+            text-decoration: none;
+        }
+        .user-icons .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            line-height: 1;
+            display: none;
+        }
+        .main-content {
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">
+        <img src="{% static 'images/logo.jpg' %}" alt="Logo">
+        Railway Reservation
+    </div>
+    <ul class="nav-links">
+        <li><a href="{% url 'search_train' %}">Search & Book Train</a></li>
+        <li><a href="{% url 'bookinghistory' %}">Booking Details</a></li>
+        <li><a href="{% url 'cancel' %}">Cancel Booking</a></li>
+        <li><a href="{% url 'upgrade' %}">Upgrade Profile</a></li>
+        <li><a href="#" onclick="logout()">Logout</a></li>
+    </ul>
+  <div class="user-icons">
+    <a href="{% url 'prodetails' %}" class="icon-link">
+        👤
+    </a>
+    <a href="{% url 'notification' %}" class="icon-link">
+        🔔
+        <span id="notification-badge" class="notification-badge">0</span>
+    </a>
+</div>
+
+</nav>
+
+<div class="main-content">
+    <h1>Welcome to Your Profile</h1>
+</div>
+
+<script src="{% static 'js/profile.js' %}"></script>
+<script>
+    function updateNotifications() {
+        fetch("{% url 'unread_notifications_count' %}")
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                if (data.count > 0) {
+                    badge.innerText = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching notifications:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', updateNotifications);
+    setInterval(updateNotifications, 10000);
+
+    function logout() {
+        console.log('User logged out.');
+        window.location.href = "{% url 'user_login' %}";
+    }
+    const images = [
+        "{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}",
+        "{% static 'images/IMG-20250901-WA0024.jpg' %}",
+        "{% static 'images/IMG-20250901-WA0029.jpg' %}",
+        "{% static 'images/IMG-20250901-WA0030.jpg' %}",
+        "{% static 'images/IMG-20250901-WA0031.jpg' %}",
+        "{% static 'images/IMG-20250901-WA0032.jpg' %}"
+        
+    ];
+    let currentIndex = 0;
+
+    function changeBackground() {
+        currentIndex = (currentIndex + 1) % images.length;
+        document.body.style.backgroundImage = `url('${images[currentIndex]}')`;
+    }
+    document.body.style.backgroundImage = `url('${images[currentIndex]}')`;
+
+    setInterval(changeBackground, 3000); // 3000 milliseconds = 3 seconds
+</script>
+
+</body>
+</html>

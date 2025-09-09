@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/notification.css' %}?v=2">
+    <title>Notifications</title>
+</head>
+<style>
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 12px;
+        display: none;
+    }
+
+    .bell-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* New CSS for the delete button */
+    .delete-btn {
+        background-color: #f44336;
+        /* Red color */
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    .delete-btn:hover {
+        background-color: #e53935;
+    }
+    
+    .notification {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding: 15px 0;
+    }
+</style>
+
+<body>
+    <nav class="nav-bar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpg' %}" alt="Logo">
+            Railway Reservation - User Panel
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'prodetails' %}" title="Profile">👤</a>
+            <div class="bell-container">
+                <a href="{% url 'notification' %}" title="Notifications">🔔</a>
+                <span id="notification-badge" class="notification-badge">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="notification-box">
+            <h2>🔔 Your Notifications</h2>
+            {% if notifications %}
+            {% for note in notifications %}
+            <div class="notification" id="notification-{{ note.id }}" data-id="{{ note.id }}">
+                <div>
+                    <div class="title">{{ note.title }}</div>
+                    <div class="message">{{ note.message }}</div>
+                    <div class="time">{{ note.created_at|date:"j M Y, h:i A" }}</div>
+                </div>
+                <button class="delete-btn" data-id="{{ note.id }}">Delete</button>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="empty-msg">No notifications yet.</p>
+            {% endif %}
+        </div>
+    </main>
+    
+    {% csrf_token %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.notification');
+            notifications.forEach(note => {
+                const notificationId = note.getAttribute('data-id');
+                if (notificationId) {
+                    fetch(`{% url 'mark_notification_read' 0 %}`.replace('0', notificationId), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(`Notification ${notificationId} marked as read.`);
+                        }
+                    })
+                    .catch(error => console.error('Error marking notification as read:', error));
+                }
+            });
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const notificationId = this.getAttribute('data-id');
+                    const notificationElement = document.getElementById(`notification-${notificationId}`);
+                    
+                    fetch(`/notifications/delete/${notificationId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notificationElement.remove();
+                            console.log('Notification deleted successfully.');
+                        } else {
+                            console.error('Error deleting notification:', data.error);
+                            alert('Could not delete notification: ' + data.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

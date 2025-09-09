@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel Booking History</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            margin: 0 auto;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+            border-bottom: 2px solid darkgreen;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding-left: 15px ;
+            border-left: 5px solid green;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            padding-left: 15px;
+
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-badge.booked { background-color: #28a745; }
+        .status-badge.cancelled { background-color: #dc3545; }
+
+        .card-body {
+            padding: 20px;
+        }
+        
+        .card-body h5 {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .card-body p {
+            margin-bottom: 10px;
+        }
+
+        .message-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .message-box.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message-box.danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        .back-button-container {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
+            Your Hotel Bookings
+        </h2>
+
+        <div class="back-button-container">
+            <a href="{% url 'bookinghistory' %}" class="btn btn-success">Go Back to Booking History</a>
+        </div>
+        
+        <div id="message-container"></div>
+
+        {% if hotel_bookings %}
+            {% for booking in hotel_bookings %}
+                <div class="card" id="booking-card-{{ booking.id }}">
+                    <div class="card-header">
+                        <span>Booking ID: {{ booking.id }}</span>
+                        <span class="status-badge {{ booking.status|lower }}">{{ booking.status|capfirst }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5>{{ booking.hotel.hotel_name }}</h5>
+                        <div>
+                            <strong>Customer Name:</strong> {{ booking.user.full_name }}<br>
+                            <strong>Customer Mobile:</strong> {{ booking.user.mobile }}<br>
+                            <strong>Customer CNIC:</strong> {{ booking.user.cnic }}<br>
+                            <strong>Location:</strong> {{ booking.hotel.location }}<br>
+                            <strong>Check-in:</strong> {{ booking.check_in_date|date:"F d, Y" }}<br>
+                            <strong>Check-out:</strong> {{ booking.check_out_date|date:"F d, Y" }}<br>
+                            <strong>Room Rent:</strong> PKR {{ booking.hotel.room_rent }}<br>
+                        </div>
+                        
+                        <div class="mt-3">
+                            {% if booking.status != 'Cancelled' %}
+                                <button class="btn btn-danger cancel-booking-btn" data-booking-id="{{ booking.id }}">Cancel Reservation</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                You have no hotel bookings yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageContainer = document.getElementById('message-container');
+
+            function showMessage(type, message) {
+                messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
+            }
+
+            document.querySelectorAll('.cancel-booking-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookingId = this.dataset.bookingId;
+                    
+                    fetch("{% url 'cancel_hotel_booking' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ 'booking_id': bookingId })
+                    })
+                    .then(response => {
+                        // Check if the response is OK (status 200) before parsing JSON
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            showMessage('success', data.message);
+                            const card = document.getElementById(`booking-card-${bookingId}`);
+                            const statusBadge = card.querySelector('.status-badge');
+                            statusBadge.textContent = 'Cancelled';
+                            statusBadge.classList.remove('booked');
+                            statusBadge.classList.add('cancelled');
+                            button.style.display = 'none';
+                        } else {
+                            showMessage('danger', data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('danger', 'An error occurred. Please try again.');
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

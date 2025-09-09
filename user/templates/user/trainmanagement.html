@@ -1,0 +1,275 @@
+{% load static %}
+{% load user_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Train Management</title>
+    <link rel="stylesheet" href="{% static 'css/trainmanagement.css' %}" />
+    <style>
+        /* Toast container */
+        #toast-messages {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+        }
+
+        /* Individual toast */
+        .toast {
+            background-color: green;
+            /* Green for success */
+            color: white;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            font-family: Arial, sans-serif;
+            min-width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
+            TRAIN MANAGEMENT(ADDING, UPDATING & DELETING)
+        </h2>
+
+        <!-- Toast Messages -->
+        {% if messages %}
+        <div id="toast-messages">
+            {% for message in messages %}
+            <div class="toast">{{ message }}</div>
+            {% endfor %}
+        </div>
+
+        <script>
+            // JS to fade out the toast messages after 3 seconds
+            setTimeout(() => {
+                const toastContainer = document.getElementById('toast-messages');
+                if (toastContainer) {
+                    toastContainer.style.opacity = '0';
+                    setTimeout(() => {
+                        toastContainer.remove();
+                    }, 500); 
+                }
+            }, 3000);
+        </script>
+        {% endif %}
+        <section>
+            <h3>List of Existing Trains</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Row No</th>
+                        <th>Train Name</th>
+                        <th>Train Number</th>
+                        <th>From Station</th>
+                        <th>To Station</th>
+                        <th>Route</th>
+                        <th>Train Class</th>
+                        <th>Travel Date</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Fare</th>
+                        <th>Total Seats</th>
+                        <th>Seats Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if trains %}
+                    {% for train in trains %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td> 
+                        <td>{{ train.train_name }}</td>
+                        <td>{{ train.train_number }}</td>
+                        <td>{{ train.from_station }}</td>
+                        <td>{{ train.to_station }}</td>
+                        <td>{{ train.route }}</td>
+                                     <td>
+  <ul>
+    {% for class_name in train.classes|split_string:"," %}
+      <li>{{ class_name }}</li>
+    {% endfor %}
+  </ul>
+            </td>
+                        <td>{{ train.travel_date }}</td>
+                        <td>{{ train.departure_time }}</td>
+                        <td>{{ train.arrival_time }}</td>
+                        <td>{{ train.Fare}}</td>
+                        <td>{{train.total_seats}}</td>
+                        <td>{{train.seats_available}}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="10">No trains found.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Add Train Form -->
+        <section class="form-section">
+            <h3>Add Train</h3>
+            <form method="POST" action="{% url 'add_train' %}">
+                {% csrf_token %}
+                <label>Train Name:</label>
+                <input type="text" name="train_name" required />
+
+                <label>Train Number:</label>
+                <input type="text" name="train_number" required />
+
+                <label>From Station:</label>
+                <select name="from_station" required>
+                    <option value="">--Select--</option>
+                    <option value="Lahore">Lahore</option>
+                    <option value="Karachi">Karachi</option>
+                    <option value="Islamabad">Islamabad</option>
+                    <option value="Peshawar">Peshawar</option>
+                    <option value="Multan">Multan</option>
+                    <option value="Quetta">Quetta</option>
+                    <option value="Faislabad">Faislabad</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Gujranwala">Gujranwala</option>
+                    <option value="Sailkot">Sailkot</option>
+                    <option value="Gujrat">Gujrat</option>
+                    <option value="Sarghoda">Sarghoda</option>
+                    <option value="Bahawalpur">Bahawalpur</option>
+                    <option value="Sukhar">Sukhar</option>
+                    <option value="Mardan">Mardan</option>
+                    <option value="Abbottabad">Abbottabad</option>
+                    <option value="Mirpur">Mirpur</option>
+                    <option value="Muzaffarabad">Muzaffarabad</option>
+                    <option value="Gligit">Gligit</option>
+                </select>
+
+                <label>To Station:</label>
+                <select name="to_station" required>
+                    <option value="">--Select--</option>
+                    <option value="Lahore">Lahore</option>
+                    <option value="Karachi">Karachi</option>
+                    <option value="Islamabad">Islamabad</option>
+                    <option value="Peshawar">Peshawar</option>
+                    <option value="Multan">Multan</option>
+                    <option value="Quetta">Quetta</option>
+                    <option value="Faislabad">Faislabad</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Gujranwala">Gujranwala</option>
+                    <option value="Sailkot">Sailkot</option>
+                    <option value="Gujrat">Gujrat</option>
+                    <option value="Sarghoda">Sarghoda</option>
+                    <option value="Bahawalpur">Bahawalpur</option>
+                    <option value="Sukhar">Sukhar</option>
+                    <option value="Mardan">Mardan</option>
+                    <option value="Abbottabad">Abbottabad</option>
+                    <option value="Mirpur">Mirpur</option>
+                    <option value="Muzaffarabad">Muzaffarabad</option>
+                    <option value="Gligit">Gligit</option>
+                </select>
+
+                <label>Route:</label>
+                <input type="text" name="route" required />
+
+                    <label>Available Classes:</label>
+                    <input type="text" name="classes" placeholder="Enter Classes">
+
+                <label>Travel Date:</label>
+                <input type="date" name="travel_date" required />
+
+                <label>Departure Time:</label>
+                <input type="time" name="departure_time" required />
+
+                <label>Arrival Time:</label>
+                <input type="time" name="arrival_time" required />
+
+                <label>Total Seats:</label>
+<input type="number" name="total_seats" value="{{ train.total_seats }}" required><br><br>
+<p>Currently Available Seats: {{ train.seats_available }}</p>
+{% if error %}
+    <p style="color:red;">{{ error }}</p>
+{% endif %}
+
+                <button type="submit">Add Train</button>
+            </form>
+        </section>
+
+        <!-- Update Train Form -->
+        <section class="form-section">
+            <h3>Update Train</h3>
+            <form method="POST" action="{% url 'update_train' %}">
+                {% csrf_token %}
+
+                <label for="train_number">Train Number:</label>
+                <select name="train_number" required>
+                    <option value="">--Select Train Number--</option>
+                    {% for train in trains %}
+                    <option value="{{ train.train_number }}">({{ train.train_number }})</option>
+                    {% endfor %}
+                </select>
+
+                <label>New Train Name:</label>
+                <input type="text" name="train_name" />
+
+                <label>New From Station:</label>
+                <input type="text" name="from_station" />
+
+                <label>New To Station:</label>
+                <input type="text" name="to_station" />
+
+                <label>New Route:</label>
+                <input type="text" name="route" />
+
+                <label>New Train Class:</label>
+                <input type="text" id="train_class" placeholder="A,B,C,D" required>
+                <label>New Travel Date:</label>
+                <input type="date" name="travel_date" />
+
+                <label>New Departure Time:</label>
+                <input type="time" name="departure_time" />
+
+                <label>New Arrival Time:</label>
+                <input type="time" name="arrival_time" />
+
+                <button type="submit">Update Train</button>
+            </form>
+        </section>
+
+        <!-- Delete Train Form -->
+<section class="form-section">
+    <h3>Delete Train</h3>
+
+    {% if messages %}
+    {% for message in messages %}
+    <p style="color:green;">
+        {{ message }}
+    </p>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'delete_train' %}">
+        {% csrf_token %}
+        <label for="train_number">Enter Train Number to Delete:</label>
+        <select name="train_number" required>
+            <option value="">--Select Train Number--</option>
+            {% for train in trains %}
+            <option value="{{ train.train_number }}">({{ train.train_number }})</option>
+            {% endfor %}
+        </select>
+
+        <!-- ✅ Delete button added -->
+        <button type="submit" class="btn-action delete-btn">Delete Train</button>
+    </form>
+</section>
+
+
+    </div>
+</body>
+</html>

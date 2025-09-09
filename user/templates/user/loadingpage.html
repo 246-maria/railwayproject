@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Booking</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 320px;
+        }
+        .spinner {
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h2>Please wait...</h2>
+        <p>Your payment is being verified by the admin.</p>
+        <p>Once approved, your ticket will be generated automatically.</p>
+    </div>
+    <script>
+    const bookingId = "{{ booking_id }}";  
+
+    // ✅ Django se URL banate waqt sirf variable pass karo
+    const checkStatusUrl = "{% url 'check_booking_status' booking_id %}";
+    const ticketUrl = "{% url 'ticket' booking_id %}";
+
+    const checkStatusInterval = setInterval(() => {
+        fetch(checkStatusUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "approved") {
+                    clearInterval(checkStatusInterval);
+                    window.location.href = ticketUrl;  // ticket page pe redirect
+                } else if (data.status === "rejected") {
+                    clearInterval(checkStatusInterval);
+                    alert("❌ Your payment is rejected by the admin. Please upload again.");
+                    window.location.href = "{% url 'book' %}";
+                }
+            })
+            .catch(error => console.error("Error fetching status:", error));
+    }, 3000);
+</script>
+
+</body>
+</html>

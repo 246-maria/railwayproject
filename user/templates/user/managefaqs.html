@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage FAQs</title>
+    <link rel="stylesheet" href="{% static 'css/managefaqs.css' %}"?v=4>
+</head>
+<body>
+
+<div class="container">
+   
+    <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+        Manage FAQs
+    </h2>
+   
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- Ye important hai -->
+    <button type="submit">Add FAQ</button>
+</form>
+
+<br><br>
+
+<table>
+    <tr>
+        <th>Question</th>
+        <th>Answer</th>
+        <th>Actions</th>
+    </tr>
+    {% for faq in faqs %}
+    <tr>
+        <td>{{ faq.question }}</td>
+        <td>{{ faq.answer }}</td>
+        <td>
+            <a href="{% url 'update_faq' faq.id %}"
+               style="background-color: green; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-right: 5px;">
+               Edit
+            </a>
+            <br><br>
+            <a href="{% url 'delete_faq' faq.id %}"
+               style="background-color: red; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-weight: bold;">
+               Delete
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/adminpanel.css' %}">
+    <title>Admin Panel Dashboard</title>
+    
+</head>
+
+<body>
+      <nav class="nav-bar">
+        <div class="logo">
+            <img src="{% static 'images/logo.jpg' %}" alt="Logo" 
+                 style="width: 50px; height: auto; border-radius: 50%; margin-right: 10px; padding-top: 3px;">
+            Railway Reservation - <span style="color: #ffffff;">Admin Panel</span>
+        </div>
+        <div class="nav-links">
+            <a href="{% url 'adminprodetails' %}">👤</a>
+        </div>
+    </nav>
+
+    <div class="container">
+     <aside class="sidebar">
+    <a href="{% url 'trainmanagement' %}" class="nav-link"><button>Train Management</button></a>
+    <a href="{% url 'faremanagement' %}" class="nav-link"><button>Fare Management</button></a>
+    <a href="{% url 'usermanagement' %}" class="nav-link"><button>User Management</button></a>
+    <a href="{% url 'paymentmanagement' %}" class="nav-link"><button>Payment Management</button></a>
+    <a href="{% url 'ticketmanagement' %}" class="nav-link"><button>Ticket Management</button></a>
+    <a href="{% url 'generatereport' %}" class="nav-link"><button>Generate Report</button></a>
+    <a href="{% url 'admin_feedback_panel' %}" class="nav-link"><button>View Feedbacks </button></a>
+    <a href="{% url 'managefaqs' %}" class="nav-link"><button>Manage FAQs</button></a>
+    <a href="{% url 'managenotifications' %}" class="nav-link"><button>Manage Notifications</button></a>
+    <a href="{% url 'manageservices' %}" class="nav-link"><button>Manage Services</button></a>
+    <a href="{% url 'updateprofile' %}" class="nav-link"><button>Upgrade Profile</button></a>
+    
+</aside>
+
+
+
+    </div>
+<script src="{% static 'js/adminpanel.js' %}"></script>
+   
+</body>
+
+</html>

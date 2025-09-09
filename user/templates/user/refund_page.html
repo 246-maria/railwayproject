@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Refund Status</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-success text-center">
+            <h3>Ticket Cancelled!</h3>
+            <p>Your ticket for {{ booking.train.train_name }} has been successfully cancelled.</p>
+            
+            {% if refund_amount > 0 %}
+                <p>A refund of <strong>PKR {{ refund_amount }}</strong> is being processed.</p>
+            {% else %}
+                <p>No refund is being processed for this cancellation as per our policy.</p>
+            {% endif %}
+            
+            <hr>
+            <p>It may take 3-5 business days for the amount to reflect in your account.</p>
+        </div>
+        <div class="text-center">
+            <a href="{% url 'train_history' %}" class="btn btn-primary mt-3">Go to Booking History</a>
+        </div>
+    </div>
+</body>
+</html>

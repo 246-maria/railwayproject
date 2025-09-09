@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}") no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            color: green;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Enter OTP</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="otp" class="form-control" placeholder="Enter the 6-digit OTP" required>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">Verify</button>
+        </form>
+        <p class="mt-3"><small>OTP has been sent to your email address.</small></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    background-image: url('../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg');
+    height: 500px;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: green;
+    border-bottom: 2px solid green;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+h2 img {
+    width: 50px;
+    height: auto;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: green;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: darkgreen;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: blue;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}

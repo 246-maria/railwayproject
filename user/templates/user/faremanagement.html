@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fare Management</title>
+    <link rel="stylesheet" href="{% static 'css/faremanagement.css' %}">
+</head>
+<body>
+
+    <div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
+        Fare Management</h2>
+
+        <!-- Train Fare List -->
+        <section class="fare-list">
+            <h3>List of Trains with Fares</h3>
+            <table border="1" cellpadding="8" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Row No.</th>
+                        <th>Train Name</th>
+                        <th>Train Number</th>
+                        <th>Route</th>
+                        <th>Fare Per person</th>
+                        <th>AC Sleeper Fare (PKR)</th>
+                        <th>AC Standard Fare (PKR)</th>
+                        <th>Business Fare (PKR)</th>
+                        <th>Economy Fare (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for train in trains %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td> 
+                        <td>{{ train.train_name }}</td>
+                        <td>{{ train.train_number }}</td>
+                        <td>{{ train.route }}</td>
+                        <td>{{ train.Fare}}</td>
+                        <td>{{ train.ac_sleeper_fare }}</td>
+                        <td>{{ train.ac_standard_fare }}</td>
+                        <td>{{ train.business_fare }}</td>
+                        <td>{{ train.economy_fare }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8">No trains found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Add Train Fare -->
+        <section class="add-fare">
+            <h3>Add Train Fare</h3>
+           <form method="POST" action="{% url 'add_fare' %}">
+    {% csrf_token %}
+
+    <label for="train">Train Number:</label>
+    <select name="train" required>
+        <option value="">--Select Train--</option>
+        {% for t in trains %}
+        <option value="{{ t.train_number }}">{{ t.train_name }} ({{ t.train_number }})</option>
+        {% endfor %}
+    </select>
+
+    <label>Fare Per Person:</label>
+    <input type="number" name="Fare" step="0.01" required placeholder="Enter Fare Per Person"><br>
+    <label>Economy Fare:</label>
+    <input type="number" name="economy_fare" step="0.01" required placeholder="Enter Economy Class Fare"><br>
+
+    <label>Business Fare:</label>
+    <input type="number" name="business_fare" step="0.01" required placeholder="Enter Business Class Fare"><br>
+
+    <label>AC Standard Fare:</label>
+    <input type="number" name="ac_standard_fare" step="0.01" required placeholder="Enter AC_Standard Class Fare"><br>
+
+    <label>AC Sleeper Fare:</label>
+    <input type="number" name="ac_sleeper_fare" step="0.01" required placeholder="Enter AC_Sleeper Class Fare"><br>
+
+    <button type="submit">Save All Fares</button>
+</form>
+
+        </section>
+
+        <!-- Update Train Fare -->
+        <section class="update-fare">
+            <h3>Update Train Fare</h3>
+            <form method="POST" action="{% url 'update_fare' %}">
+                {% csrf_token %}
+                   <label for="train">Train Number:</label>
+    <select name="train" required>
+        <option value="">--Select Train Number--</option>
+        {% for t in trains %}
+        <option value="{{ t.train_number }}">({{ t.train_number }})</option>
+        {% endfor %}
+    </select>
+
+                <label for="fare">Fare Per Person:</label>
+                <input type="number" name="fare">
+
+                <label>Economy Fare (PKR):</label>
+                <input type="number" name="economy_fare">
+
+                <label>Business Fare (PKR):</label>
+                <input type="number" name="business_fare">
+
+                <label>AC Standard Fare (PKR):</label>
+                <input type="number" name="ac_standard_fare">
+
+                <label>AC Sleeper Fare (PKR):</label>
+                <input type="number" name="ac_sleeper_fare">
+
+                <button type="submit">Update All Fare</button>
+            </form>
+        </section>
+    </div>
+
+</body>
+</html>

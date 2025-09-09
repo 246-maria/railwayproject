@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: darkgreen;
+            color: white;
+        }
+        .report-info {
+            margin-bottom: 20px;
+        }
+        .no-data {
+            text-align: center;
+            font-size: 1.2em;
+            color: #888;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <div class="report-info">
+        <p><strong>Date Range:</strong> {{ start_date }} to {{ end_date }}</p>
+    </div>
+    
+    {% if data %}
+        {% if report_type == 'bookings' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Train</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Passengers</th>
+                    <th>Fare</th>
+                    <th>Booking Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in data %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.user.full_name }}</td>
+                    <td>{{ booking.train.train_name }} ({{ booking.train.train_number }})</td>
+                    <td>{{ booking.from_station }}</td>
+                    <td>{{ booking.to_station }}</td>
+                    <td>{{ booking.no_of_passengers }}</td>
+                    <td>{{ booking.total_fare }}</td>
+                    <td>{{ booking.booking_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'rejected_tickets' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Train</th>
+                    <th>Booking Date</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in data %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.user.full_name }}</td>
+                    <td>{{ booking.train.train_name }} ({{ booking.train.train_number }})</td>
+                    <td>{{ booking.booking_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'refund_tickets' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Train</th>
+                    <th>Booking Date</th>
+                    <th>Refund Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in data %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.user.full_name }}</td>
+                    <td>{{ booking.train.train_name }} ({{ booking.train.train_number }})</td>
+                    <td>{{ booking.booking_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.refund_amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'cancellations' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Train</th>
+                    <th>Cancellation Date</th>
+                    <th>Refund Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in data %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.user.full_name }}</td>
+                    <td>{{ booking.train.train_name }} ({{ booking.train.train_number }})</td>
+                    <td>{{ booking.cancellation_date|date:"Y-m-d" }}</td>
+                    <td>{{ booking.refund_amount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'payments' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>User</th>
+                    <th>Booking ID</th>
+                    <th>Amount</th>
+                    <th>Payment Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in data %}
+                <tr>
+                    <td>{{ payment.id }}</td>
+                    <td>{{ payment.user.full_name }}</td>
+                    <td>{{ payment.booking.id }}</td>
+                    <td>{{ payment.amount }}</td>
+                    <td>{{ payment.payment_date|date:"Y-m-d" }}</td>
+                    <td>{{ payment.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'users' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>CNIC</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in data %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.cnic }}</td>
+                    <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'taxi_bookings' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Taxi</th>
+                    <th>Booking Date</th>
+                    <th>Pick-up Location</th>
+                    <th>Drop-off Location</th>
+                    <th>Fare</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for taxi_booking in data %}
+                <tr>
+                    <td>{{ taxi_booking.id }}</td>
+                    <td>{{ taxi_booking.user.full_name }}</td>
+                    <td>{{ taxi_booking.taxi.driver_name }}</td>
+                    <td>{{ taxi_booking.booking_date|date:"Y-m-d" }}</td>
+                    <td>{{ taxi_booking.pickup_location }}</td>
+                    <td>{{ taxi_booking.dropoff_location }}</td>
+                    <td>{{ taxi_booking.total_fare }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'taxi_cancellations' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Taxi</th>
+                    <th>Booking Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for taxi_booking in data %}
+                <tr>
+                    <td>{{ taxi_booking.id }}</td>
+                    <td>{{ taxi_booking.user.full_name }}</td>
+                    <td>{{ taxi_booking.taxi.driver_name }}</td>
+                    <td>{{ taxi_booking.booking_date|date:"Y-m-d" }}</td>
+                    <td>{{ taxi_booking.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'hotel_bookings' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Hotel</th>
+                    <th>Check-in Date</th>
+                    <th>Check-out Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hotel_booking in data %}
+                <tr>
+                    <td>{{ hotel_booking.id }}</td>
+                    <td>{{ hotel_booking.user.full_name }}</td>
+                    <td>{{ hotel_booking.hotel.hotel_name }}</td>
+                    <td>{{ hotel_booking.check_in_date|date:"Y-m-d" }}</td>
+                    <td>{{ hotel_booking.check_out_date|date:"Y-m-d" }}</td>
+                    <td>{{ hotel_booking.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif report_type == 'hotel_cancellations' %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User</th>
+                    <th>Hotel</th>
+                    <th>Check-in Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hotel_booking in data %}
+                <tr>
+                    <td>{{ hotel_booking.id }}</td>
+                    <td>{{ hotel_booking.user.full_name }}</td>
+                    <td>{{ hotel_booking.hotel.hotel_name }}</td>
+                    <td>{{ hotel_booking.check_in_date|date:"Y-m-d" }}</td>
+                    <td>{{ hotel_booking.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    {% else %}
+        <p class="no-data">No data found for the selected date range.</p>
+    {% endif %}
+</body>
+</html>

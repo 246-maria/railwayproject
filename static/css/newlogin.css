@@ -1,0 +1,87 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    background-image: url('../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.login-container {
+    background-color: #f4f4f4;
+    width: 400px;
+    margin: 100px auto;
+    border: 1px solid #ccc;
+    text-align: left;
+    padding: 30px;
+    border-radius: 8px;
+}
+
+.login-container h2 {
+    text-align: center;
+    color: green;
+    margin-bottom: 10px;
+}
+
+.login-container hr {
+    border: 1px solid green;
+    margin-bottom: 20px;
+}
+
+.login-container label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    text-align: left;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"],
+.login-container input[type='checkbox'] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;;
+}
+
+.login-container button:hover {
+    background-color: darkgreen;
+}
+
+.login-container .signup-link {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.login-container .signup-link a {
+    color: green;
+    text-decoration: none;
+    text-decoration: none;
+}
+
+p {
+    text-align: center;
+    font-size: 14px;
+}
+
+a {
+    color: green;
+    font-size: 14px;
+    text-decoration: none;
+}

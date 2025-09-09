@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Ticket</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f4f4f9;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: rgba(18, 117, 18, 0.849);
+            border-bottom: 2px solid rgba(0, 128, 0, 0.664);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        h2 img {
+            height: 40px;
+        }
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        h3 img {
+            width: 40px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group p {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .form-group input[readonly],
+        .form-group p {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+        .form-group input[type="file"] {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .form-group select {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .btn {
+            background-color: #207527;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: green;
+        }
+        .message-container {
+            margin-bottom: 20px;
+        }
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;"> Book Your Ticket</h2>
+
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="{% if message.tags == 'success' %}message-success{% else %}message-error{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" value="{{ user.full_name }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" value="{{ user.email }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Mobile:</label>
+                <input type="number" value="{{ user.mobile }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Train:</label>
+                <p>{{ train.train_name }}</p>
+                <input type="hidden" name="train_id" value="{{ train.id }}">
+            </div>
+
+            <div class="form-group">
+                <label>From Station:</label>
+                <input type="text" name="from_station" value="{{ train.from_station }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>To Station:</label>
+                <input type="text" name="to_station" value="{{ train.to_station }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Class:</label>
+                <input type="text" name="travel_class" value="{{ travel_class }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>No. of Passengers:</label>
+                <input type="number" name="no_of_passengers" value="{{ no_of_passenger }}" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Total Fare:</label>
+                <input type="text" name="total_fare" value="{{ total_fare }}" readonly>
+            </div>
+            <div class="form-group">
+                <label>Payment Method:</label>
+                <select name="payment_method" required>
+                    <option value="">-- Select --</option>
+                    <option value="JazzCash">JazzCash(03030845656)</option>
+                    <option value="EasyPaisa">EasyPaisa(03456231390)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Upload Payment Screenshot:</label>
+                <input type="file" name="payment_screenshot" accept="image/*">
+            </div>
+
+            <div class="form-group text-center">
+                <button type="submit" class="btn">
+                    Confirm Booking
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

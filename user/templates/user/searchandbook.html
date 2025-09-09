@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Train Search and Book Train</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-image:url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-position:center;
+            background-repeat:no-repeat;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: auto;
+            margin-top: 2%;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        [type='date'],
+        [type="number"],
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            width: 100%;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: darkgreen;
+            color: white;
+            border: none;
+            width: 100%;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover { background-color: green; }
+        h3 {
+            text-align: left;
+            color: black;
+            border-bottom: 2px solid darkgreen;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: rgb(188, 226, 188);
+        }
+        th, td {
+            border: 1px solid #0e0d0d; 
+            padding: 8px; 
+            text-align: center; 
+        }
+        th { 
+            background-color: darkgreen; 
+            color: white;
+        }
+        h2 {
+            text-align: left;
+            color: green;
+            border-bottom: 2px solid green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px;">
+            Search Train, Calculate Fare and Book
+        </h2>
+        
+        <form method="post" action="{% url 'search_train' %}">
+            {% csrf_token %}
+            <label>From Station:</label>
+            <select name="from_station" required>
+                <option value="">--Select--</option>
+                <option value="Lahore">Lahore</option>
+                <option value="Karachi">Karachi</option>
+                <option value="Islamabad">Islamabad</option>
+                <option value="Peshawar">Peshawar</option>
+                <option value="Multan">Multan</option>
+                <option value="Quetta">Quetta</option>
+                <option value="Faislabad">Faislabad</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Gujranwala">Gujranwala</option>
+                <option value="Sailkot">Sailkot</option>
+                <option value="Gujrat">Gujrat</option>
+                <option value="Sarghoda">Sarghoda</option>
+                <option value="Bahawalpur">Bahawalpur</option>
+                <option value="Sukhar">Sukhar</option>
+                <option value="Mardan">Mardan</option>
+                <option value="Abbottabad">Abbottabad</option>
+                <option value="Mirpur">Mirpur</option>
+                <option value="Muzaffarabad">Muzaffarabad</option>
+                <option value="Gligit">Gligit</option>
+            </select><br><br>
+
+            <label>To Station:</label>
+            <select name="to_station" required>
+                <option value="">--Select--</option>
+                <option value="Lahore">Lahore</option>
+                <option value="Karachi">Karachi</option>
+                <option value="Islamabad">Islamabad</option>
+                <option value="Peshawar">Peshawar</option>
+                <option value="Multan">Multan</option>
+                <option value="Quetta">Quetta</option>
+                <option value="Faislabad">Faislabad</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Gujranwala">Gujranwala</option>
+                <option value="Sailkot">Sailkot</option>
+                <option value="Gujrat">Gujrat</option>
+                <option value="Sarghoda">Sarghoda</option>
+                <option value="Bahawalpur">Bahawalpur</option>
+                <option value="Sukhar">Sukhar</option>
+                <option value="Mardan">Mardan</option>
+                <option value="Abbottabad">Abbottabad</option>
+                <option value="Mirpur">Mirpur</option>
+                <option value="Muzaffarabad">Muzaffarabad</option>
+                <option value="Gligit">Gligit</option>
+            </select><br><br>
+
+            <label>Class:</label>
+            <select name="class" id="class">
+                <option value="--Select--">--Select--</option>
+                <option value="Economy">Economy</option>
+                <option value="Business">Business</option>
+                <option value="AC_Sleeper">AC_Sleeper</option>
+                <option value="AC_Standard">AC_Standard</option>
+            </select><br><br>
+
+            <label>No of Passengers:</label>
+            <input type="number" id="no_of_passenger" name="no_of_passengers" min="1" max="10" value=" "><br><br>
+
+            <label>Travel Date:</label>
+            <input type="date" id="travel_date" name="travel_date" required><br><br>
+
+            <button type="submit">Search and Calculate Fare</button>
+        </form>
+
+        {% if trains %}
+            <h3>Available Trains on {{ trains.0.travel_date }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Train Name</th>
+                        <th>Train Number</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Selected Class</th>
+                        <th>No of Passengers</th>
+                        <th>Fare (Per Passenger)</th>
+                        <th>Total Fare</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for train in trains %}
+                    <tr>
+                        <td>{{ train.train_name }}</td>
+                        <td>{{ train.train_number }}</td>
+                        <td>{{ train.from_station }}</td>
+                        <td>{{ train.to_station }}</td>
+                        <td>{{ train.departure_time }}</td>
+                        <td>{{ train.arrival_time }}</td>
+                        <td>{{ selected_class }}</td>
+                        <td>{{ passengers }}</td>  
+                        <td>
+                            {% if selected_class == "Economy" %}
+                                {{ train.economy_fare }}
+                            {% elif selected_class == "Business" %}
+                                {{ train.business_fare }}
+                            {% elif selected_class == "AC_Sleeper" %}
+                                {{ train.ac_sleeper_fare }}
+                            {% else %}
+                                {{ train.ac_standard_fare }}
+                            {% endif %}
+                        </td>
+                        <td>{{ train.total_fare }}</td>
+                        <td class="border border-gray-400 px-4 py-2">
+<form action="{% url 'book_ticket' train.id %}" method="get">
+    <input type="hidden" name="from_station" value="{{ train.from_station }}">
+    <input type="hidden" name="to_station" value="{{ train.to_station }}">
+    <input type="hidden" name="selected_class" value="{{ selected_class }}">
+    <input type="hidden" name="passengers" value="{{ passengers }}">
+    <input type="hidden" name="total_fare" value="{{ train.total_fare }}">
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+        Book Now
+    </button>
+</form>
+                </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elif request.method == 'POST' %}
+            <p>No trains found for your search criteria.</p>
+        {% endif %}
+    </div>
+</body>
+
+<script>
+    const dateInput = document.getElementById('travel_date');
+    const today = new Date();
+    const maxDate = new Date();
+    maxDate.setMonth(today.getMonth() + 1);
+
+    const formatDate = (d) => {
+        const year = d.getFullYear();
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const day = d.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    dateInput.min = formatDate(today);
+    dateInput.max = formatDate(maxDate);
+    window.onload = function() {
+        const form = document.querySelector('form');
+        if (form) {
+            form.reset();
+        }
+    };
+</script>
+</html>

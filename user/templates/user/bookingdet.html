@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% if is_single_booking %}
+            Booking Confirmed
+        {% else %}
+            My Taxi Booking History
+        {% endif %}
+    </title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}") no-repeat center center;
+            background-size: cover;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        .header-section {
+            display: flex;
+            align-items: center;
+            color: green;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid green;
+        }
+        .header-section img {
+            width: 50px;
+            margin-right: 15px;
+        }
+        .header-section h2 {
+            font-weight: bold;
+            margin: 0;
+        }
+        .card {
+            background-color: #f8f9fa;
+            border: 1px solid #e2e6ea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid green;
+        }
+        .card-header {
+            background-color: green;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -20px -20px 20px -20px;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-badge.booked {
+            background-color: #28a745;
+         }
+        .status-badge.cancelled {
+              background-color: #dc3545;
+            }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            font-size: 1rem;
+            color: #495057;
+        }
+        .detail-item strong { color: #212529; }
+        .btn-cancel {
+            margin-top: 15px;
+        }
+        .back-button-container {
+            color: white;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-section">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo">
+        <h2>
+            {% if is_single_booking %}
+                Booking Confirmed
+            {% else %}
+                My Taxi Booking History
+            {% endif %}
+        </h2>
+    </div>
+<div class="back-button-container">
+            <a href="{% url 'bookinghistory' %}" class="btn btn-success">Go Back to Booking History</a>
+        </div>
+    {% if is_single_booking %}
+        <div class="card" id="booking-card-{{ booking.id }}">
+            <div class="card-header">
+                <h5 class="mb-0">Booking Details</h5>
+                <span class="status-badge {% if booking.status|lower == 'cancelled' %}cancelled{% else %}booked{% endif %}">
+                    {{ booking.status|capfirst }}
+                </span>
+            </div>
+            <div class="back-button-container">
+            <a href="{% url 'bookinghistory' %}" class="btn btn-success">Go Back to Booking History</a>
+        </div>
+            <div class="details-grid">
+                <div class="detail-item"><strong>Booking ID:</strong> {{ booking.id }}</div>
+                <div class="detail-item"><strong>Name:</strong> {{ booking.user_name }}</div>
+                <div class="detail-item"><strong>Contact:</strong> {{ booking.user_contact }}</div>
+                <div class="detail-item"><strong>Taxi:</strong> {{ booking.taxi.driver_name }} ({{ booking.taxi.taxi_number }})</div>
+                <div class="detail-item"><strong>From:</strong> {{ booking.pickup_location }}</div>
+                <div class="detail-item"><strong>To:</strong> {{ booking.dropoff_location }}</div>
+                <div class="detail-item"><strong>Travel Date/Time:</strong> {{ booking.travel_datetime|date:"d M, Y h:i A" }}</div>
+                <div class="detail-item"><strong>Fare:</strong> Rs.{{ booking.fare }}</div>
+            </div>
+
+            {% if booking.status|lower != 'cancelled' %}
+                <form method="POST" action="{% url 'cancel_taxi_booking' booking_id=booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-cancel">Cancel Reservation</button>
+                </form>
+            {% endif %}
+        </div>
+
+    {% else %}
+        {% for booking in taxi_bookings %}
+            <div class="card" id="booking-card-{{ booking.id }}">
+                <div class="card-header">
+                    <h5 class="mb-0">Booking Details (ID: {{ booking.id }})</h5>
+                    <span class="status-badge {% if booking.status|lower == 'cancelled' %}cancelled{% else %}booked{% endif %}">
+                        {{ booking.status|capfirst }}
+                    </span>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item"><strong>Name:</strong> {{ booking.user_name }}</div>
+                    <div class="detail-item"><strong>Contact:</strong> {{ booking.user_contact }}</div>
+                    <div class="detail-item"><strong>Taxi:</strong> {{ booking.taxi.driver_name }} ({{ booking.taxi.taxi_number }})</div>
+                    <div class="detail-item"><strong>From:</strong> {{ booking.pickup_location }}</div>
+                    <div class="detail-item"><strong>To:</strong> {{ booking.dropoff_location }}</div>
+                    <div class="detail-item"><strong>Travel Date/Time:</strong> {{ booking.travel_datetime|date:"d M, Y h:i A" }}</div>
+                    <div class="detail-item"><strong>Fare:</strong> Rs.{{ booking.fare }}</div>
+                </div>
+
+                {% if booking.status|lower != 'cancelled' %}
+                    <form method="POST" action="{% url 'cancel_taxi_booking' booking_id=booking.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-cancel">Cancel Reservation</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="text-center">You have no taxi booking history.</p>
+        {% endfor %}
+    {% endif %}
+</div>
+
+</body>
+</html>

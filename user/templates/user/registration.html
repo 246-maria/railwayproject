@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="{% static 'css/registration.css' %}">
+</head>
+<body>
+  <div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            REGISTER YOURSELF AS RAILWAY RESERVATION USER
+        </h2>
+
+       <form method="POST" action="{% url 'registration' %}" onsubmit="return validateForm(event)">
+
+            {% csrf_token %}
+
+            <label>Full Name:</label>
+            <input type="text" name="full_name" placeholder="Full Name" required>
+
+            <label>Mobile No:</label>
+            <input type="text" name="mobile" id="mobileNumber" placeholder="03001234567" maxlength="11" required>
+
+            <label>Email Address:</label>
+            <input type="email" name="email" placeholder="abc@gmail.com" required>
+
+            <label>Retype Email Address:</label>
+            <input type="email" name="confirm_email" placeholder="abc@gmail.com" required>
+
+            <label>CNIC No:</label>
+            <input type="text" name="cnic" id="cnicNumber" placeholder="1234567891234" maxlength="13" required>
+
+             <div style="position: relative; margin-top: 10px;">
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password"
+        placeholder="Enter your password"
+        style="width: 91%; padding-right: 30px;">
+
+    <input type="checkbox" onclick="togglePassword('password')"
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+    
+</div>
+
+<div style="position: relative; margin-top: 10px;">
+    <label for="confirm_password">Confirm Password:</label>
+    <input type="password" id="confirm_password" name="confirm_password"
+        placeholder="Confirm your password"
+        style="width: 91%; padding-right: 30px;">
+    <input type="checkbox" onclick="togglePassword('confirm_password')"
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+    
+</div>
+
+            <label>Enter Code:</label>
+            <div class="captcha">
+                <div class="captcha-code" id="captchaCode">ABCDE</div>
+                <input type="text" id="captchaInput" name="captcha_input" placeholder="Enter Captcha" required>
+                <button type="button" onclick="generateCaptcha()">↻</button>
+            </div>
+
+            <div class="terms">
+                <input type="checkbox" required> I have read and agreed to
+                    the
+                <a href="{% url 'termcondition' %}">Terms and Conditions</a>.
+            </div>
+
+           <button type="submit">Submit</button>
+
+
+            <div class="login-link">
+                Already have an account? <a href="{% url 'newlogin' %}">Login here</a>
+            </div>
+        </form>
+    </div>
+    <script>
+    const profileURL = "{% url 'profile' %}";  
+</script>
+    <script src="{% static 'js/registration.js' %}"></script>
+    
+</body>
+</html>

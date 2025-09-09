@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking</title>
+    <link rel="stylesheet" href="{% static 'css/hotel.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            Book a Hotel
+        </h2>
+
+        <div id="message-container"></div>
+        <div id="search-section">
+            <form action="{% url 'hotel' %}" method="GET" id="search-form">
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <select class="form-control" id="location" name="location">
+                        <option value="">All Locations</option>
+                        {% for loc in locations %}
+                        <option value="{{ loc }}" {% if loc == location %}selected{% endif %}>{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="hotel_name">Hotel Name</label>
+                    <select class="form-control" id="hotel_name" name="hotel_name">
+                        <option value="">All Hotels</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="check-in-date">Check-in Date</label>
+                    <input type="date" class="form-control" id="check-in-date" name="check_in_date" required value="{{ check_in_date|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="check-out-date">Check-out Date</label>
+                    <input type="date" class="form-control" id="check-out-date" name="check_out_date" required value="{{ check_out_date|default:'' }}">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Search Hotels</button>
+            </form>
+        </div>
+        {% if available_hotels %}
+        <hr>
+        <div id="results-section">
+            <h4 class="mt-4">Available Hotels</h4>
+            {% for hotel in available_hotels %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ hotel.hotel_name }}</h5>
+                    <p class="card-text">
+                        <strong>Location:</strong> {{ hotel.location }}<br>
+                        <strong>Room Rent:</strong> PKR {{ hotel.room_rent }}<br>
+                        <strong>Available Rooms:</strong> {{ hotel.available_rooms }}<br>
+                        <strong>Facilities:</strong> {{ hotel.facilities }}
+                    </p>
+                    <button class="btn btn-success book-hotel-btn"
+                        data-hotel-id="{{ hotel.hotel_id }}"
+                        data-check-in="{{ check_in_date }}"
+                        data-check-out="{{ check_out_date }}">
+                        Book Now
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-warning mt-4">
+            No hotel Found.
+        </div>
+        {% endif %}
+        <div id="booking-form-section" style="display: none;">
+            <hr>
+            <h4 class="mt-4">Confirm Your Booking</h4>
+            <form id="booking-form" action="{% url 'book_hotel' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="booking-hotel-id" name="hotel_id">
+                <div class="form-group">
+                    
+                    <label>Check-in Date:</label>
+                    <input type="date" id="booking-check-in" name="check_in_date" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Check-out Date:</label>
+                    <input type="date" id="booking-check-out" name="check_out_date" class="form-control" readonly>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-block">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookingForm = document.getElementById('booking-form');
+            const messageContainer = document.getElementById('message-container');
+            const locationSelect = document.getElementById('location');
+            const hotelNameSelect = document.getElementById('hotel_name');
+
+            function showMessage(type, message) {
+                messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
+            }
+            
+            function updateHotelDropdown() {
+                const selectedLocation = locationSelect.value;
+                hotelNameSelect.innerHTML = '<option value="">All Hotels</option>';
+                
+                if (selectedLocation) {
+                    fetch(`{% url 'get_hotels_by_location' %}?location=${selectedLocation}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.hotels.forEach(hotel => {
+                                const option = document.createElement('option');
+                                option.value = hotel.hotel_name;
+                                option.textContent = hotel.hotel_name;
+                                hotelNameSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching hotels:', error));
+                }
+            }
+            
+            locationSelect.addEventListener('change', updateHotelDropdown);
+
+            document.querySelectorAll('.book-hotel-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.getElementById('booking-hotel-id').value = this.dataset.hotelId;
+                    document.getElementById('booking-check-in').value = this.dataset.checkIn;
+                    document.getElementById('booking-check-out').value = this.dataset.checkOut;
+                    document.getElementById('booking-form-section').style.display = 'block';
+                });
+            });
+
+            bookingForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('success', data.message);
+                        setTimeout(() => {
+                            window.location.href = '{% url "hoteldetails" %}'; 
+                        }, 2000);
+                    } else {
+                        showMessage('danger', 'Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('danger', 'An error occurred during booking.');
+                });
+            });
+            updateHotelDropdown();
+        });
+    </script>
+</body>
+</html>

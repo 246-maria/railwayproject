@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Report</title>
+    <link rel="stylesheet" href="{% static 'css/generatereport.css' %}?v=2">
+</head>
+<body>
+
+<div class="container">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            GENERATE REPORT
+        </h2>
+
+    <form method="POST" action="{% url 'generate_report' %}">
+        {% csrf_token %}
+        
+        <label for="report_type">Report Type:</label>
+        <select id="report_type" name="report_type" required>
+            <option value="">-- Select Report Type --</option>
+            <option value="bookings">Ticket Bookings</option>
+            <option value="rejected_tickets">Rejected Tickets</option>
+            <option value="refund_tickets">Refund Tickets</option>
+            <option value="cancellations">Ticket Cancellations</option>
+            <option value="payments">Payments</option>
+            <option value="users">User Registrations</option>
+            <option value="taxi_bookings">Taxi Bookings</option>
+            <option value="taxi_cancellations">Taxi Cancellations</option>
+            <option value="hotel_bookings">Hotel Bookings</option>
+            <option value="hotel_cancellations">Hotel Cancellations</option>
+        </select>
+
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" required>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" required>
+
+        <label for="export_type">Export Format:</label>
+        <select id="export_type" name="export_type" required>
+            <option value="pdf">PDF</option>
+            <option value="csv">CSV</option>
+        </select>
+
+        <button type="submit">Generate</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Taxi Booking</title>
+    <style>
+       body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+              width: 650px;
+            height: 100%;
+            background-color: white;
+            border: 1px solid #000000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        h2 {
+            color: darkgreen;
+            font-weight: bold;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"],
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .btn-primary {
+            background-color: darkgreen;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: green;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+        .btn-block {
+            width: 100%;
+        }
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            border: 2px solid darkgreen;
+            text-align: center;
+        }
+        th {
+            background-color: darkgreen;
+            color: white;
+        }
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .messages li {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .messages li.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .messages li.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Taxi Booking Service</h2>
+    
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="form-section">
+        <h4>Search for a Taxi</h4>
+        <form action="{% url 'taxi_booking' %}" method="get">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="from_location">From Location:</label>
+                <select id="from_location" name="from_location" required>
+                    <option value="">Select From Location</option>
+                    {% for loc in from_locations %}
+                    <option value="{{ loc }}" {% if search_query.from_location == loc %}selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="to_location">To Location:</label>
+                <select id="to_location" name="to_location" required>
+                    <option value="">Select To Location</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="travel_date_time">Travel Date & Time:</label>
+                <input type="datetime-local" id="travel_date_time" name="travel_date_time" required value="{{ search_query.travel_date_time|default:'' }}">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Search Taxis</button>
+        </form>
+    </div>
+
+    {% if taxis %}
+    <div id="available-taxis-container" class="table-container">
+        <h4>Available Taxis</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Driver Name</th>
+                    <th>Car Model</th>
+                    <th>Number</th>
+                    <th>Fare</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for taxi in taxis %}
+                <tr>
+                    <td>{{ taxi.driver_name }}</td>
+                    <td>{{ taxi.taxi_name }}</td>
+                    <td>{{ taxi.taxi_number }}</td>
+                    <td>PKR {{ taxi.fare }}</td>
+                    <td><button class="btn btn-success" onclick="showBookingForm('{{ taxi.taxi_id }}')">Book Now</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        No taxis found matching your criteria.
+    </div>
+    {% endif %}
+
+    <div id="booking-form-container" class="hidden form-section">
+        <h4>Confirm Your Booking</h4>
+        <form action="{% url 'confirm_booking' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="user_name">Your Name:</label>
+                <input type="text" id="user_name" name="user_name" required>
+            </div>
+            <div class="form-group">
+                <label for="user_contact">Phone Number:</label>
+                <input type="text" id="user_contact" name="user_contact" required>
+            </div>
+            
+            <input type="hidden" id="selected_taxi_id" name="selected_taxi_id">
+            <input type="hidden" id="booking_from_location" name="booking_from_location">
+            <input type="hidden" id="booking_to_location" name="booking_to_location">
+            <input type="hidden" id="booking_date_time" name="booking_date_time">
+            
+            <button type="submit" class="btn btn-primary btn-block">Confirm Booking</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromLocationSelect = document.getElementById('from_location');
+        const toLocationSelect = document.getElementById('to_location');
+        
+        function updateToLocationDropdown(fromLoc, selectedToLoc = '') {
+            toLocationSelect.innerHTML = '<option value="">Select To Location</option>'; 
+            if (fromLoc) {
+                fetch(`{% url 'get_to_locations' %}?from_location=${fromLoc}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.to_locations.forEach(location => {
+                            const option = document.createElement('option');
+                            option.value = location;
+                            option.textContent = location;
+                            if (location === selectedToLoc) {
+                                option.selected = true;
+                            }
+                            toLocationSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching to locations:', error));
+            }
+        }
+        
+        fromLocationSelect.addEventListener('change', () => updateToLocationDropdown(fromLocationSelect.value));
+        
+        const selectedFromLocationFromSearch = fromLocationSelect.value;
+        const selectedToLocationFromSearch = '{{ search_query.to_location }}';
+        if (selectedFromLocationFromSearch) {
+            updateToLocationDropdown(selectedFromLocationFromSearch, selectedToLocationFromSearch);
+        }
+
+        window.showBookingForm = function(taxiId) {
+            const fromLocation = document.getElementById('from_location').value;
+            const toLocation = document.getElementById('to_location').value;
+            const travelDateTime = document.getElementById('travel_date_time').value;
+
+            document.getElementById('selected_taxi_id').value = taxiId;
+            document.getElementById('booking_from_location').value = fromLocation;
+            document.getElementById('booking_to_location').value = toLocation;
+            document.getElementById('booking_date_time').value = travelDateTime;
+
+            document.getElementById('available-taxis-container').classList.add('hidden');
+            document.getElementById('booking-form-container').classList.remove('hidden');
+        };
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Train Booking History</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            margin: 0 auto;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+            border-bottom: 2px solid green;
+        }
+
+        h2 img {
+            height: 40px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .btn-secondary {
+            background-color: green;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgb(51, 158, 51);
+        }
+
+        .btn-success {
+            background-color: darkgreen;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: green;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border-left: 5px solid green;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: green;
+            color: white;
+            font-weight: bold;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-title {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .card-text {
+            margin: 0 0 10px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .status-badge {
+            font-size: 0.85rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .status-pending { background-color: #ffc107; color: black; }
+        .status-approved { background-color: darkgreen; color: white; }
+        .status-cancelled { background-color: #dc3545; color: white; }
+        .status-refund { background-color: yellowgreen; color: white; }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        .alert-info {
+            background-color: #e7f3fe;
+            color: #31708f;
+            border: 1px solid #bcdff1;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            Your Train Booking History
+        </h2>
+
+        <a href="{% url 'booking_history' %}" class="btn btn-secondary">Back to Booking History</a>
+
+        {% if train_bookings %}
+            {% for booking in train_bookings %}
+            <div class="card">
+                <div class="card-header">
+                    <span>Ticket Number: {{ booking.ticket.ticket_number }}</span>
+                    <span class="status-badge status-{{ booking.status|lower }}">
+                        {{ booking.status|title }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ booking.train.train_name }}</h5>
+                    <p class="card-text">
+                        <strong>Route:</strong> {{ booking.from_station }} to {{ booking.to_station }}<br>
+                        <strong>Travel Date:</strong> {{ booking.train.travel_date }}<br>
+                        <strong>Fare:</strong> PKR {{ booking.total_fare }}<br>
+                        <strong>No. of Passengers:</strong> {{ booking.no_of_passengers }}
+                    </p>
+
+                    {% if booking.status|lower == 'approved' %}
+                        <a href="{% url 'ticket' booking_id=booking.id %}" class="btn btn-success">View E-Ticket</a>
+                        
+                       <form method="POST" action="{% url 'cancel_ticket' booking_id=booking.id %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Cancel Ticket</button>
+</form>
+                        
+                        <a href="{% url 'taxi_booking' %}" class="btn" style="background-color: yellow; color: black;">Book Taxi</a>
+                        <a href="{% url 'hotel' %}" class="btn" style="background-color: blue; color: white;">Book Hotel</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                You have no train bookings yet.
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

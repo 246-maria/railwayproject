@@ -1,0 +1,117 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+    background-image: url("../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin: 0;
+}
+
+.container {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: green;
+    border-bottom: 2px solid green;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.captcha {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.captcha-code {
+    background-color: #ffe5e5;
+    color: red;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 4px;
+    letter-spacing: 3px;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.terms {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.terms a {
+    color: green;
+    text-decoration: none;
+}
+
+.terms a:hover {
+    text-decoration: underline;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: green;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: darkgreen;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: green;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+.validation-error {
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: block;
+}

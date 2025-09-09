@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upgrade Admin Profile</title>
+    <link rel="stylesheet" href="{% static 'css/updateprofile.css' %}">
+</head>
+<body>
+<div class="update-container">
+    <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+    Update Admin Profile</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label>Full Name:</label>
+        <input type="text" name="full_name" value="{{ user.full_name }}" required>
+
+        <label>Mobile No:</label>
+        <input type="text" name="mobile" value="{{ mobile}}" placeholder="Enter Your Mobile Number">
+
+        <label>CNIC:</label>
+        <input type="text" name="cnic" value="{{ cnic}}" placeholder="Enter Your CNIC">
+
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ user.email }}" required>
+        
+        
+ <div style="position: relative; margin-top: 10px;">
+                <label for="password">New Password(Optional):</label>
+                <input type="password" id="password" name="password"
+                    placeholder="Enter your password"
+                    style="width: 91%; padding-right: 40px;">
+                <input type="checkbox" onclick="togglePassword()"
+                    style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
+                <span style="position: absolute; left: 210px; top: 50%; transform: translateY(-50%); font-size: 12px;">
+                   
+                </span>
+            </div>
+
+        <button type="submit">Update Profile</button>
+    <p>Back to <a href="{% url 'adminpanel' %}" class="back-link">Admin Panel</a></p>
+
+
+    </form>
+</div>
+</body>
+
+<script>
+    function togglePassword() {
+    const pwd = document.getElementById("password");
+    pwd.type = pwd.type === "password" ? "text" : "password";
+}
+</script>
+</html>

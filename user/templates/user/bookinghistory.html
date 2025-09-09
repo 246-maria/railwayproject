@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking History</title>
+
+</head>
+<style>
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.container h2 {
+    text-align: center;
+    color: green;
+    border-bottom: 2px solid green;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.container h2 img
+{
+    height: 40px;
+}
+.btn-group-vertical .btn {
+    display: block;
+    width: 100%;
+    background-color: darkgreen;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    padding: 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    border: none;
+}
+
+.btn-group-vertical .btn:hover {
+    background-color: green;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(21, 101, 192, 0.3);
+}
+
+.btn-group-vertical .btn + .btn {
+    margin-top: 12px;
+}
+
+</style>
+<body>
+    <div class="container mt-5 text-center">
+       <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            My Booking History
+        </h2>
+        
+        <div class="btn-group-vertical" role="group" aria-label="Booking history options">
+              <p>Please select the type of booking you wish to View:</p>
+
+            <a href="{% url 'train_history' %}" class="btn btn-primary btn-lg m-2">View Train Bookings</a>
+            <a href="{% url 'taxi_booking_history' %}" class="btn btn-primary btn-lg m-2">View Taxi Bookings</a>
+            <a href="{% url 'hoteldetails' %}" class="btn btn-primary btn-lg m-2">View Hotel Bookings</a>
+            <a href="{% url 'profile'%}" class="btn btn-primary btn-lg m-2">Back To Profile</a>
+        </div>
+    </div>
+</body>
+</html>

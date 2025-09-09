@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: white;
+            margin: 0;
+            padding: 20px;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: auto;
+            margin-top: 2%;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: green;
+            border-bottom: 2px solid green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            background-color: white;
+        }
+
+        .table th {
+            background-color: darkgreen;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Ticket Management</h2>
+
+    <h4>Approved Tickets</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Passenger Name</th>
+                <th>Train</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Travel Date</th>
+                <th>Total Fare</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in approved_train_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.train.train_name }}</td>
+                <td>{{ booking.from_station }}</td>
+                <td>{{ booking.to_station }}</td>
+                <td>{{ booking.train.travel_date }}</td>
+                <td>{{ booking.total_fare }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No approved tickets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Cancelled Tickets</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Passenger Name</th>
+                <th>Train</th>
+                <th>Cancellation Date</th>
+                <th>Refund Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in cancelled_train_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.train.train_name }}</td>
+                <td>{{ booking.cancellation_date }}</td>
+                <td>{{ booking.refund_amount }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No cancelled tickets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Rejected Tickets</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Passenger Name</th>
+                <th>Train</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in rejected_train_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.train.train_name }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No rejected tickets found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Refunded Bookings</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Passenger Name</th>
+                <th>Train</th>
+                <th>Cancellation Date</th>
+                <th>Refund Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in refunded_train_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.train.train_name }}</td>
+                <td>{{ booking.cancellation_date }}</td>
+                <td>{{ booking.refund_amount }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No refunded bookings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Taxi Bookings</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>User</th>
+                <th>Taxi</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Travel Date & Time</th>
+                <th>Fare</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in approved_taxi_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.taxi.car_name }}</td>
+                <td>{{ booking.pickup_location }}</td>
+                <td>{{ booking.dropoff_location }}</td>
+                <td>{{ booking.travel_datetime }}</td>
+                <td>{{ booking.fare }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No approved taxi bookings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Cancelled Taxi Bookings</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>User</th>
+                <th>Taxi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in cancelled_taxi_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.taxi.taxi_name }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No cancelled taxi bookings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Hotel Bookings</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>User</th>
+                <th>Hotel</th>
+                <th>Check-in Date</th>
+                <th>Check-out Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in approved_hotel_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.hotel.hotel_name }}</td>
+                <td>{{ booking.check_in_date }}</td>
+                <td>{{ booking.check_out_date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No approved hotel bookings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr style="margin-top: 40px; margin-bottom: 40px;">
+
+    <h4>Cancelled Hotel Bookings</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>User</th>
+                <th>Hotel</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in cancelled_hotel_bookings %}
+            <tr>
+                <td>{{ booking.id }}</td>
+                <td>{{ booking.user.full_name }}</td>
+                <td>{{ booking.hotel.hotel_name }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No cancelled hotel bookings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

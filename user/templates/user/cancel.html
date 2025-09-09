@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancel Bookings</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+            color: green;
+            border-bottom: 2px solid green;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        h2 img {
+            height: 40px;
+        }
+        .option-button {
+            display: block;
+            width: 80%;
+            margin: 20px auto;
+            background-color: darkgreen;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .option-button:hover {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo" style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            CANCEL YOUR BOOKINGS
+        </h2>
+
+       <p>Please select the type of booking you wish to cancel:</p>
+
+<a href="{% url 'train_history' %}" class="option-button">Cancel Train Bookings</a>
+<a href="{% url 'taxi_booking_history' %}" class="option-button">Cancel Taxi Bookings</a>
+<a href="{% url 'hoteldetails' %}" class="option-button">Cancel Hotel Bookings</a>
+<a href="{% url 'profile' %}" class="option-button">Back To Profile</a>
+
+    </div>
+</body>
+</html>
