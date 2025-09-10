@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancel Ticket</title>
+    
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card-container {
+            width: 100%;
+            max-width: 400px;
+            
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            gap: 10px;
+        }
+        .logo {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+            padding-top: 3px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+        }
+        h3{
+            color: darkgreen;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #d9534f;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #c9302c;
+        }
+
+        /* CSS for Toast Message */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+
+        .toast-message {
+            background-color: #28a745; /* Green for success */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .toast-message.show {
+            opacity: 1;
+        }
+        .toast-message.error {
+            background-color: #dc3545; /* Red for error */
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="card">
+            <div class="title-container">
+                <img src="{% static 'images/logo.jpg' %}" alt="My Logo" class="logo">
+                <h3 class="card-title">Enter Booking ID to Cancel</h3>
+            </div>
+            <hr>
+            <form method="post" action="{% url 'cancel_ticket' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="booking_id">Booking ID</label>
+                    <input type="text" id="booking_id" name="booking_id" required>
+                </div>
+                <button type="submit">Cancel Ticket</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast-message {% if message.tags == 'error' %}error{% endif %}" id="toast-message-{{ forloop.counter }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast-message');
+            toasts.forEach((toast, index) => {
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, index * 500); 
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 5000 + index * 500);
+            });
+        });
+    </script>
+</body>
+</html>

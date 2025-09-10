@@ -7,30 +7,41 @@
     <title>Upgrade Profile - Pakistan Railways</title>
     <style>
         body {
-            font-family: 'Times New Roman', Times, serif;
-            background-image: url('{% static "images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg" %}');
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
         .form-container {
-            max-width: 500px;
-            margin: 50px auto;
-            background-color: white;
-            padding: 30px;
+            width: 100%;
+            max-width: 420px;
+            background-color: #fff;
+            padding: 25px 30px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
         }
 
         .form-container h2 {
             text-align: center;
-            color: green;
-            border-bottom: 2px solid green;
+            color: darkgreen;
+            border-bottom: 2px solid darkgreen;
             padding-bottom: 10px;
             margin-bottom: 25px;
+            font-size: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -38,74 +49,75 @@
         }
 
         .form-container h2 img {
-            width: 50px;
+            width: 40px;
             height: auto;
         }
 
         label {
+            font-size: 14px;
             font-weight: bold;
-            display: block;
             margin-bottom: 5px;
+            display: block;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            border-color: darkgreen;
+            box-shadow: 0 0 6px rgba(0, 100, 0, 0.3);
+            outline: none;
         }
 
         .toggle-button-container {
             position: relative;
-            margin-bottom: 15px;
-        }
-
-        .toggle-button-container input[type="password"],
-        .toggle-button-container input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            padding-right: 40px; 
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
         }
 
         .password-toggle-box {
             position: absolute;
             right: 10px;
-            top: 55%;
+            top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            width: 15px;
-            height: 15px;
-        }
-
-        input[type="text"],
-        input[type="email"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
         }
 
         button {
             width: 100%;
             padding: 12px;
-            background-color: green;
+            background-color: darkgreen;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
         }
 
         button:hover {
-            background-color: darkgreen;
+            background-color: green;
+            transform: scale(1.02);
         }
 
         .back-link {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 18px;
         }
 
         .back-link a {
             text-decoration: none;
-            color: blue;
+            color: darkgreen;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         .back-link a:hover {
@@ -114,9 +126,10 @@
 
         .message {
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 6px;
             margin-bottom: 15px;
             text-align: center;
+            font-size: 14px;
         }
 
         .message.success {
@@ -130,18 +143,22 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+
+        .error-message {
+            color: red;
+            font-size: 0.85em;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-
     <div class="form-container">
-        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
-            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
-            UPGRADE YOUR PROFILE
+        <h2>
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo" />
+            Upgrade Profile
         </h2>
 
-        <!-- Messages -->
         {% if messages %}
             {% for message in messages %}
                 <div class="message {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}">
@@ -157,22 +174,23 @@
             <input type="text" name="full_name" value="{{ user.full_name }}" placeholder="Enter your full name" required>
 
             <label>Mobile No:</label>
-            <input type="text" name="mobile" value="{{ mobile }}" placeholder="03XXXXXXXXX" maxlength="11" pattern="\d{11}">
+            <input type="text" id="mobile" name="mobile" value="{{ user.mobile }}" placeholder="03XXXXXXXXX" maxlength="11">
+            <div id="mobile-error" class="error-message"></div>
 
             <label>Email:</label>
-            <input type="email" name="email" value="{{ user.email }}" placeholder="abc@example.com" required>
+            <input type="email" id="email" name="email" value="{{ user.email }}" placeholder="abc@example.com" required>
+            <div id="email-error" class="error-message"></div>
 
             <label>CNIC:</label>
-            <input type="text" name="cnic" value="{{ cnic }}" placeholder="00000-0000000-0" maxlength="13">
+            <input type="text" id="cnic" name="cnic" value="{{ user.cnic }}" placeholder="12345-6789123-4" maxlength="15">
+            <div id="cnic-error" class="error-message"></div>
 
-            <!-- Update Password with toggle -->
             <div class="toggle-button-container">
                 <label for="password">Update Password:</label>
                 <input type="password" id="password" name="password" placeholder="New password">
                 <input type="checkbox" id="togglePassword" class="password-toggle-box">
             </div>
 
-            <!-- Confirm Password with toggle -->
             <div class="toggle-button-container">
                 <label for="confirmPassword">Confirm Password:</label>
                 <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
@@ -186,9 +204,8 @@
             </div>
         </form>
     </div>
-    
+
     <script>
-        // Password toggle function
         document.getElementById('togglePassword').addEventListener('change', function() {
             const passwordInput = document.getElementById('password');
             passwordInput.type = this.checked ? 'text' : 'password';
@@ -197,6 +214,39 @@
         document.getElementById('toggleConfirmPassword').addEventListener('change', function() {
             const confirmPasswordInput = document.getElementById('confirmPassword');
             confirmPasswordInput.type = this.checked ? 'text' : 'password';
+        });
+
+        const mobileInput = document.getElementById('mobile');
+        const mobileError = document.getElementById('mobile-error');
+
+        mobileInput.addEventListener('blur', function() {
+            const mobileValue = this.value;
+            const mobileRegex = /^03\d{9}$/;
+            mobileError.textContent = mobileValue && !mobileRegex.test(mobileValue)
+                ? "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX)."
+                : "";
+        });
+
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+
+        emailInput.addEventListener('blur', function() {
+            const emailValue = this.value;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            emailError.textContent = emailValue && !emailRegex.test(emailValue)
+                ? "Please enter a valid email address (e.g., abc@example.com)."
+                : "";
+        });
+
+        const cnicInput = document.getElementById('cnic');
+        const cnicError = document.getElementById('cnic-error');
+
+        cnicInput.addEventListener('blur', function() {
+            const cnicValue = this.value;
+            const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+            cnicError.textContent = cnicValue && !cnicRegex.test(cnicValue)
+                ? "Please enter CNIC in the format 00000-0000000-0."
+                : "";
         });
     </script>
 </body>

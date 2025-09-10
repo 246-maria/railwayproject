@@ -245,6 +245,7 @@
                         <th>CNIC</th>
                         <th>Mobile No</th>
                         <th>Ticket Number</th>
+                        <th>Total Seats</th>
                         <th>Fare</th>
                     </tr>
                 </thead>
@@ -254,6 +255,7 @@
                         <td>{{ booking.user.cnic }}</td>
                         <td>{{ booking.user.mobile }}</td>
                         <td>{{ ticket.ticket_number }}</td>
+                        <td>{{booking.no_of_passengers}}</td>
                         <td>Rs. {{ booking.total_fare}}</td>
                     </tr>
                 </tbody>

@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 import random
 from django.contrib import messages
 from django.contrib.auth import (
@@ -6,23 +5,22 @@ from django.contrib.auth import (
 )
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.core.exceptions import ObjectDoesNotExist
 import logging
 import json
+from django.views.decorators.cache import never_cache
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_protect
 from django.core.mail import send_mail
-from django.db.models import ProtectedError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.utils import timezone
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.core.mail import EmailMessage
@@ -34,11 +32,15 @@ from .models import (Train, FAQ, Notification, Feedback,
     Passenger, Hotel, Taxi, Booking, Ticket, HotelBooking, Payment, TaxiBooking
 )
 User = get_user_model()
-Passenger = get_user_model()
 logger = logging.getLogger(__name__)
+from django import forms
+class AdminProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['full_name', 'mobile', 'cnic', 'email']
 def is_admin(user):
     return user.is_superuser
-
+@never_cache
 def registration(request):
     if request.method == "POST":
         full_name = request.POST.get("full_name")
@@ -115,7 +117,7 @@ def verify_otp(request):
             messages.error(request, "Your OTP does not match. Please enter the correct 6-digit code.")
             
     return render(request, 'user/verify_otp.html')
-
+@never_cache
 def newlogin(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -171,7 +173,7 @@ def index(request): return render(request, 'user/index.html')
 def book(request): return render(request, 'user/book.html')
 def bookingdet(request): return render(request, 'user/bookingdet.html')
 def bookinghistory(request): return render(request, 'user/bookinghistory.html')
-def cancel(request): return render(request, 'user/cancel.html')
+def cancelbooking(request): return render(request, 'user/cancel.html')
 def hotel(request): return render(request, 'user/hotel.html')
 def selecttrain(request): return render(request, 'user./selecttrain')
 def hoteldet(request): return render(request, 'user/hoteldet.html')
@@ -408,20 +410,15 @@ def update_fare(request):
         return redirect('faremanagement') 
 
     return render(request, 'user/faremanagement.html')
-
+@never_cache
 def profile(request):
     if request.user.is_authenticated:
         user = request.user
         context = {"user": user}
         return render(request, "user/profile.html", context)  
     else:
-        return redirect("login")
-    
-def profile(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-    return render(request, "user/profile.html")
-    
+        return redirect("newlogin")
+@never_cache    
 def prodetails(request):
     if request.user.is_authenticated:
         user = request.user
@@ -430,7 +427,7 @@ def prodetails(request):
     else:
         return redirect("profile")
 
-
+@never_cache
 def usermanagement(request):
     users = Passenger.objects.filter(is_staff=False)
     return render(request, 'user/usermanagement.html', {'users': users})
@@ -454,7 +451,7 @@ def deleteuser(request, user_id):
     user = get_object_or_404(Passenger, id=user_id)
     user.delete()
     return redirect('usermanagement')
-
+@never_cache
 def user_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -464,20 +461,20 @@ def user_login(request):
         if user is not None:
             if user.is_blocked:
                 messages.error(request, "This account is blocked by the admin.")
-                return redirect("login")
+                return redirect("newlogin")
             elif user.is_suspended:
                 messages.error(request, "This account is suspended by the admin.")
-                return redirect("login")
+                return redirect("newlogin")
             else:
                 login(request, user)
                 return redirect("profile")
         else:
             messages.error(request, "Invalid username or password.")
-            return redirect("login")
+            return redirect("newlogin")
 
-    return render(request, "user/login.html")
+    return render(request, "user/newlogin.html")
 
-
+@never_cache
 @login_required
 def managenotifications(request):
     notifications = Notification.objects.all().order_by('-created_at')
@@ -534,78 +531,125 @@ def submit_feedback(request):
         return redirect(reverse('index'))
     return redirect(reverse('index'))
 
-# --- Adminviews feedback ---
 def admin_feedback_panel(request):
     all_feedback = Feedback.objects.all().order_by('-submitted_at')
     return render(request, 'user/feedbackmanagement.html', {'feedbacks': all_feedback})
  
-
+@never_cache
 @login_required
 def update_profile(request):
     user_instance = request.user
+    
+    # Assuming 'mobile' and 'cnic' are fields on a custom user model
+    # If they are on a separate profile model, this approach needs adjustment.
+    
+    form = PassengerForm(request.POST or None, instance=user_instance)
+    
     if request.method == 'POST':
-        form = PassengerForm(request.POST, instance=user_instance)
         if form.is_valid():
-            try:
-                form.save()
-                messages.success(request, 'Profile details have been successfully updated!')
-                return redirect('prodetails') 
+            user = form.save(commit=False)
             
-            except Exception as e:
-                messages.error(request, f'Profile update failed: {e}')
-        
+            new_password = request.POST.get('password')
+            confirm_password = request.POST.get('confirmPassword')
+
+            # Handle password change logic
+            if new_password:
+                if new_password != confirm_password:
+                    messages.error(request, 'Passwords do not match.')
+                    return render(request, 'user/prodetails.html', {'form': form, 'user': user_instance})
+                
+                user.set_password(new_password)
+
+            user.save()
+            
+            # Update the custom fields directly from the form data
+            # This is a key step to ensure custom fields are saved
+            user.mobile = form.cleaned_data.get('mobile', user.mobile)
+            user.cnic = form.cleaned_data.get('cnic', user.cnic)
+            user.save(update_fields=['mobile', 'cnic']) # Saves only specific fields
+
+            if new_password:
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Profile and password have been successfully updated!')
+            else:
+                messages.success(request, 'Profile details have been successfully updated!')
+            
+            return redirect('prodetails')
+
         else:
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = PassengerForm(instance=user_instance)
+            
     context = {
         'form': form,
         'user': user_instance,
     }
     return render(request, 'user/prodetails.html', context)
 
+@never_cache
 @login_required
 def prodetails(request):
     user_instance = request.user
     return render(request, 'user/prodetails.html', {'user': user_instance})
 
 
+
 @login_required
 def adminprodetails(request):
     admin = User.objects.filter(is_superuser=True).first()
-
     context = {
         "admin": admin
     }
     return render(request, "user/adminprodetails.html", context)
 
+
 def adminlogout(request):
     logout(request)
-    return redirect(request,'user/index.html')
-
+    return redirect('home') # 'home' should be the name of your home page URL
 
 
 @staff_member_required
 def admin_edit_profile(request):
     admin_user = request.user
-
+    
     if request.method == "POST":
-        admin_user.full_name = request.POST.get("full_name", admin_user.full_name)
-        admin_user.mobile = request.POST.get("mobile", admin_user.mobile)
-        admin_user.cnic = request.POST.get("cnic", admin_user.cnic)
-        admin_user.email = request.POST.get("email", admin_user.email)
-        password = request.POST.get("password")
-        if password:
-            admin_user.set_password(password)
-            update_session_auth_hash(request, admin_user)
-        admin_user.save()
+        form = AdminProfileForm(request.POST, instance=admin_user)
+        new_password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
 
-        messages.success(request, "Profile updated successfully!")
-        return redirect("adminprodetails")
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    # Handle password change separately from form save
+                    if new_password:
+                        if new_password != confirm_password:
+                            messages.error(request, "New password and confirm password do not match.")
+                            return render(request, "user/updateprofile.html", {'user': admin_user, 'form': form})
+                        
+                        admin_user.set_password(new_password)
+                        
+                    form.save() # This saves full_name, mobile, cnic, and email
+                    admin_user.save() # This saves the new password if it was set
+
+                    if new_password:
+                        update_session_auth_hash(request, admin_user)
+                        messages.success(request, "Profile and password updated successfully!")
+                    else:
+                        messages.success(request, "Profile updated successfully!")
+                    
+                    return redirect("admin_edit_profile")
+            
+            except Exception as e:
+                messages.error(request, f"Profile update failed: {e}")
+                
+        else:
+            messages.error(request, "Please correct the errors below.")
+            
+    else:
+        form = AdminProfileForm(instance=admin_user)
+        
     context = {
         'user': admin_user,
-        'mobile': admin_user.mobile,
-        'cnic': admin_user.cnic,
+        'form': form,
     }
     return render(request, "user/updateprofile.html", context)
 
@@ -732,7 +776,6 @@ def hotel_management(request):
         'location_query': location_query,
     }
     return render(request, 'user/hotelmanagement.html', context)
-
 @login_required
 def search_train(request):
     trains = []
@@ -756,9 +799,9 @@ def search_train(request):
             travel_date=travel_date
         )
         if travel_date == current_datetime.date():
-            one_hour_from_now = current_datetime + timedelta(hours=1)
+            fortyEight_hours_from_now = current_datetime + timedelta(hours=48)
             trains_queryset = trains_queryset.filter(
-                departure_time__gte=one_hour_from_now.time()
+                departure_time__gte=fortyEight_hours_from_now.time()
             )
         
         trains = list(trains_queryset)
@@ -942,15 +985,31 @@ def ticket(request, booking_id):
         messages.error(request, "No ticket found for this booking.")
         return redirect('bookinghistory')
     
-@require_POST
-def cancel_ticket(request, booking_id):
+@never_cache    
+@login_required
+def cancel_ticket(request):
+    booking_id = None
+    if request.method == "POST":
+        booking_id = request.POST.get('booking_id')
+    elif 'booking_id' in request.GET:
+        booking_id = request.GET.get('booking_id')
+
+    if not booking_id:
+        user_tickets = Ticket.objects.filter(booking__user=request.user, booking__status__in=['approved', 'refund_pending'])
+        return render(request, 'user/cancel_by_id.html', {'tickets': user_tickets})
+
     try:
-        booking = get_object_or_404(Booking, id=booking_id)
+        booking = get_object_or_404(Booking, pk=booking_id, user=request.user)
+        ticket_obj = get_object_or_404(Ticket, booking=booking)
+
+        if booking.status.lower() == 'cancelled':
+            messages.info(request, "This ticket is already cancelled.")
+            return redirect('cancel_by_id_view')
 
         departure_time = datetime.combine(booking.train.travel_date, booking.train.departure_time)
         current_time = timezone.now()
         time_difference = departure_time.replace(tzinfo=None) - current_time.replace(tzinfo=None)
-
+        
         if time_difference >= timedelta(hours=48):
             refund_percentage = Decimal('0.95')
         elif time_difference >= timedelta(hours=24):
@@ -962,23 +1021,26 @@ def cancel_ticket(request, booking_id):
 
         total_fare = booking.total_fare
         refund_amount = total_fare * refund_percentage
+        
         if refund_amount > 0:
             booking.status = 'refund_pending'
             Notification.objects.create(
                 user=request.user, 
-                message=f"Your ticket for Booking ID {booking.id} has been cancelled. A refund of PKR {refund_amount} is now pending."
+                message=f"Your ticket for Booking ID {booking.id} has been cancelled. A refund of PKR {refund_amount} is now pending which is proceed within 3-4 days. Please also Cancel the Taxi and Hotel Booking if you avail any."
             )
+            messages.success(request, f"Ticket for Booking ID {booking.id} has been cancelled successfully. Refund of PKR {refund_amount} is now pending for processing.")
         else:
             booking.status = 'cancelled'
             messages.info(request, "Ticket has been cancelled, but no refund is due as per cancellation policy.")
             Notification.objects.create(
                 user=request.user, 
-                message=f"Your ticket for Booking ID {booking.id} has been cancelled. No refund is due."
+                message=f"Your ticket for Booking ID {booking.id} has been cancelled. No refund is due. Please Also cancel the Taxi and Hotel services if you avail any."
             )
 
         booking.refund_amount = refund_amount
         booking.cancellation_date = timezone.now()
         booking.save()
+        
         subject = f"Ticket Cancellation Alert: Booking ID {booking.id}"
         message_body = (
             f"A ticket has been cancelled by {request.user.full_name}.\n\n"
@@ -990,7 +1052,7 @@ def cancel_ticket(request, booking_id):
             f"Refund Amount: PKR {refund_amount}\n"
             f"Status: {booking.status}\n"
         )
-        admin_email = 'railwayreservationsystem591@gmail.com'  
+        admin_email = 'railwayreservationsystem591@gmail.com'
         send_mail(
             subject,
             message_body,
@@ -998,14 +1060,16 @@ def cancel_ticket(request, booking_id):
             [admin_email],
             fail_silently=False,
         )
-
-        messages.success(request, f"Ticket {booking.id} has been cancelled successfully. Refund of PKR {refund_amount} is now pending for processing.")
+        messages.success(request, f"Cancellation email sent to admin for Booking ID {booking.id}.")
         
-        return redirect('train_history')
-
+    except Booking.DoesNotExist:
+        messages.error(request, f"Booking ID {booking_id} not found or does not belong to your account.")
+    except Ticket.DoesNotExist:
+         messages.error(request, f"Ticket for Booking ID {booking_id} not found.")
     except Exception as e:
         messages.error(request, f"An error occurred during cancellation: {e}")
-        return redirect('train_history')
+    
+    return redirect('cancel_by_id_view')
 
 @require_POST
 def process_refund(request, booking_id):
@@ -1044,17 +1108,12 @@ def paymentmanagement(request):
 
 
 def ticketmanagement(request):
-    # Train bookings
     approved_train_bookings = Booking.objects.filter(status='approved')
     rejected_train_bookings = Booking.objects.filter(status='rejected')
     refunded_train_bookings = Booking.objects.filter(status='refund')
     cancelled_train_bookings = Booking.objects.filter(status='cancelled')
-    
-    # Taxi bookings
     approved_taxi_bookings = TaxiBooking.objects.filter(status='Booked')
     cancelled_taxi_bookings = TaxiBooking.objects.filter(status='Cancelled')
-    
-    # Hotel bookings
     approved_hotel_bookings = HotelBooking.objects.filter(status='Booked')
     cancelled_hotel_bookings = HotelBooking.objects.filter(status='Cancelled')
     
@@ -1073,54 +1132,75 @@ def ticketmanagement(request):
 @staff_member_required
 @transaction.atomic
 def approve_or_reject_booking(request, booking_id, action):
-    booking = get_object_or_404(Booking, id=booking_id)
+    try:
+        booking = get_object_or_404(Booking, id=booking_id)
 
-    if action == 'approve':
-        if booking.status == 'pending':
-            payment = get_object_or_404(Payment, booking=booking)
-            payment.status = 'approved'
-            payment.save()
-            
-            booking.status = 'approved'
-            booking.save()
-            try:
-                ticket = Ticket.objects.get(booking=booking)
-                ticket.status = 'approved'
-                ticket.save()
-            except Ticket.DoesNotExist:
-                ticket_id = f"TICK-{uuid.uuid4().hex[:8].upper()}"
-                ticket = Ticket.objects.create(
-                    ticket_id=ticket_id,
-                    booking=booking,
-                    passenger=booking.user,
-                    train=booking.train,
-                    status='Confirmed',
-                    price=booking.total_fare,
-                    seat_number=booking.seat_number
-                )
-            
-            messages.success(request, f"Booking #{booking.id} has been approved. Ticket has been generated.")
-            return redirect('ticketmanagement')
-        else:
-            messages.info(request, f"Booking #{booking.id} is already {booking.status}.")
+        if not booking.user:
+            messages.error(request, "This booking is not linked to a user. Cannot send a notification.")
             return redirect('paymentmanagement')
 
-    elif action == 'reject':
-        if booking.status == 'pending':
-            booking.status = 'rejected'
-            booking.save()
-            try:
+        if action == 'approve':
+            if booking.status == 'pending':
                 payment = get_object_or_404(Payment, booking=booking)
-                payment.status = 'rejected'
+                payment.status = 'approved'
                 payment.save()
-            except Payment.DoesNotExist:
-                pass
-            
-            messages.success(request, f"Booking #{booking.id} has been rejected.")
-            return redirect('ticketmanagement')
-        else:
-            messages.info(request, f"Booking #{booking.id} is already {booking.status}.")
-            return redirect('paymentmanagement')
+                
+                booking.status = 'approved'
+                booking.save()
+                
+                try:
+                    ticket = Ticket.objects.get(booking=booking)
+                    ticket.status = 'approved'
+                    ticket.save()
+                except Ticket.DoesNotExist:
+                    ticket_id = f"TICK-{uuid.uuid4().hex[:8].upper()}"
+                    ticket = Ticket.objects.create(
+                        ticket_id=ticket_id,
+                        booking=booking,
+                        passenger=booking.user,
+                        train=booking.train,
+                        status='Confirmed',
+                        price=booking.total_fare,
+                        seat_number=booking.seat_number
+                    )
+                
+                Notification.objects.create(
+                    user=booking.user,
+                    message=f"Your Booking ID:{booking.id} is approved by the admin. Please Check the booking details. Now you can also avail Taxi and Hotel Booking if you like."
+                )
+
+                messages.success(request, f"Booking #{booking.id} has been approved. Ticket has been generated.")
+                return redirect('ticketmanagement')
+            else:
+                messages.info(request, f"Booking #{booking.id} is already {booking.status}.")
+                return redirect('paymentmanagement')
+
+        elif action == 'reject':
+            if booking.status == 'pending':
+                booking.status = 'rejected'
+                booking.save()
+                
+                try:
+                    payment = get_object_or_404(Payment, booking=booking)
+                    payment.status = 'rejected'
+                    payment.save()
+                except Payment.DoesNotExist:
+                    pass
+                
+                Notification.objects.create(
+                    user=booking.user,
+                    message=f"Your Payment is rejected by the admin.For more Details please contact the admin."
+                )
+
+                messages.success(request, f"Booking #{booking.id} has been rejected.")
+                return redirect('ticketmanagement')
+            else:
+                messages.info(request, f"Booking #{booking.id} is already {booking.status}.")
+                return redirect('paymentmanagement')
+
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+        return redirect('paymentmanagement')
     
     return redirect('paymentmanagement')
 
@@ -1165,6 +1245,7 @@ def train_history(request):
         'train_bookings': train_bookings
     }
     return render(request, "user/train_history.html", context)
+
 
 @login_required
 def book_hotel(request):
@@ -1504,43 +1585,41 @@ def booking_details_view(request, booking_id):
 
 @login_required
 def hotel(request):
-    """
-    Renders the hotel search page and handles hotel searches.
-    """
     location_query = request.GET.get('location')
     hotel_name_query = request.GET.get('hotel_name')
     check_in_date = request.GET.get('check_in_date')
     check_out_date = request.GET.get('check_out_date')
-    # train_booking_id = request.GET.get('train_booking_id')  # Removed this line
-    
+
     available_hotels = []
+    searched = False
 
     if request.method == 'GET' and (location_query or hotel_name_query or (check_in_date and check_out_date)):
+        searched = True
         if not check_in_date or not check_out_date:
             messages.error(request, 'Please provide both check-in and check-out dates.')
         else:
             try:
                 check_in_obj = datetime.strptime(check_in_date, '%Y-%m-%d').date()
                 check_out_obj = datetime.strptime(check_out_date, '%Y-%m-%d').date()
-                
+
                 if check_out_obj <= check_in_obj:
                     messages.error(request, 'Check-out date must be after check-in date.')
                 else:
                     query_set = Hotel.objects.filter(available_rooms__gt=0)
-                    
+
                     if location_query:
                         query_set = query_set.filter(location__iexact=location_query)
-                    
+
                     if hotel_name_query:
                         query_set = query_set.filter(hotel_name__iexact=hotel_name_query)
-                    
+
                     available_hotels = query_set
-            
+
             except ValueError:
                 messages.error(request, 'Invalid date format.')
 
     locations = Hotel.objects.values_list('location', flat=True).distinct()
-    
+
     context = {
         'locations': locations,
         'available_hotels': available_hotels,
@@ -1548,22 +1627,17 @@ def hotel(request):
         'hotel_name': hotel_name_query,
         'check_in_date': check_in_date,
         'check_out_date': check_out_date,
-        # 'train_booking_id': train_booking_id,  # Removed this line
+        'searched': searched,
     }
     return render(request, 'user/hotel.html', context)
 
-
 @login_required
 def book_hotel(request):
-    """
-    Handles the booking of a hotel. This view is called via AJAX.
-    """
     if request.method == 'POST':
         try:
             hotel_id = request.POST.get('hotel_id')
             check_in_date = request.POST.get('check_in_date')
             check_out_date = request.POST.get('check_out_date')
-            # train_booking_id = request.POST.get('train_booking_id')  # Removed this line
 
             if not all([hotel_id, check_in_date, check_out_date]):
                 return JsonResponse({'success': False, 'error': 'All fields are required.'})
@@ -1574,12 +1648,6 @@ def book_hotel(request):
                 return JsonResponse({'success': False, 'error': 'No rooms available at this hotel.'})
 
             with transaction.atomic():
-                # linked_booking = None # Removed this line
-                # if train_booking_id: # Removed this line
-                #     try: # Removed this line
-                #         linked_booking = Booking.objects.get(pk=train_booking_id, user=request.user) # Removed this line
-                #     except Booking.DoesNotExist: # Removed this line
-                #         return JsonResponse({'success': False, 'error': 'Invalid train booking ID.'}) # Removed this line
 
                 HotelBooking.objects.create(
                     user=request.user,
@@ -1587,11 +1655,16 @@ def book_hotel(request):
                     check_in_date=check_in_date,
                     check_out_date=check_out_date,
                     status='Booked',
-                    # linked_booking=linked_booking # Removed this line
                 )
 
                 hotel.available_rooms -= 1
                 hotel.save()
+            
+                # Add this code to create a notification
+                Notification.objects.create(
+                    user=request.user, 
+                    message=f"Your hotel booking at {hotel.hotel_name} has been successfully completed."
+                )
             
             return JsonResponse({'success': True, 'message': 'Hotel booked successfully!'})
             
@@ -1600,11 +1673,7 @@ def book_hotel(request):
             
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
-
 def get_hotels_by_location(request):
-    """
-    API endpoint to get hotels based on a location.
-    """
     location = request.GET.get('location')
     hotels = Hotel.objects.filter(location__iexact=location).values('hotel_name')
     hotel_list = list(hotels)
@@ -1612,9 +1681,6 @@ def get_hotels_by_location(request):
 
 @login_required
 def hoteldetails(request):
-    """
-    Displays the booking history for the logged-in user.
-    """
     try:
         hotel_bookings = HotelBooking.objects.filter(user=request.user).order_by('-id')
         context = {
@@ -1627,9 +1693,6 @@ def hoteldetails(request):
 
 @require_POST
 def cancel_hotel_booking(request):
-    """
-    Cancels a specific hotel booking by handling JSON POST data.
-    """
     try:
         data = json.loads(request.body)
         booking_id = data.get('booking_id')
@@ -1651,7 +1714,7 @@ def cancel_hotel_booking(request):
             
             Notification.objects.create(
                 user=request.user, 
-                message=f"Your hotel booking (ID: {booking.id}) is successfully cancelled."
+                message=f"Your Hotel with Booking ID:{booking.id} is successfully cancelled."
             )
             
             return JsonResponse({'success': True, 'message': 'Hotel booking has been successfully cancelled.'})
@@ -1668,15 +1731,10 @@ def cancel_hotel_booking(request):
 # ====================================================================================
 
 def taxi_booking_view(request):
-    """
-    Renders the taxi booking page, allowing users to search for available taxis.
-    The view filters taxis based on user search queries and handles messages.
-    """
     taxis = None
     search_query = {}
     from_locations = Taxi.objects.values_list('from_location', flat=True).distinct().order_by('from_location')
     searched = False 
-    # train_booking_id = request.GET.get('train_booking_id') # Removed this line
 
     if request.method == 'GET':
         from_location = request.GET.get('from_location')
@@ -1703,26 +1761,17 @@ def taxi_booking_view(request):
                 messages.error(request, f"Error searching for taxis: {e}")
                 taxis = []
                 
-            if not taxis:
-                messages.warning(request, "No taxis found for this route.")
-
+           
     context = {
         'taxis': taxis,
         'search_query': search_query,
         'from_locations': from_locations,
         'searched': searched,
-        # 'train_booking_id': train_booking_id # Removed this line
     }
     return render(request, 'user/taxi.html', context)
-
-# In views.py
-
-@login_required
+login_required
 @require_POST
 def confirm_booking_view(request):
-    """
-    Handles the confirmation and creation of a new taxi booking.
-    """
     try:
         taxi_id = request.POST.get('selected_taxi_id')
         from_location = request.POST.get('booking_from_location')
@@ -1730,27 +1779,12 @@ def confirm_booking_view(request):
         travel_date_time_str = request.POST.get('booking_date_time')
         user_name = request.POST.get('user_name')
         user_contact = request.POST.get('user_contact')
-        
-        # Correctly retrieve train_booking_id once # Removed this comment
-        # train_booking_id = request.POST.get('train_booking_id') # Removed this line
-
-        # The following fields are mandatory for all bookings.
-        # train_booking_id is optional, so we don't include it here. # Removed this comment
         if not all([taxi_id, from_location, to_location, travel_date_time_str, user_name, user_contact]):
             messages.error(request, "All required fields are not provided.")
             return redirect('taxi_booking')
         
         selected_taxi = get_object_or_404(Taxi, pk=taxi_id)
         travel_datetime = datetime.strptime(travel_date_time_str, '%Y-%m-%dT%H:%M')
-
-        # linked_booking = None # Removed this line
-        # Check if a train_booking_id was provided before trying to get the object # Removed this comment
-        # if train_booking_id: # Removed this line
-        #     try: # Removed this line
-        #         linked_booking = Booking.objects.get(pk=train_booking_id, user=request.user) # Removed this line
-        #     except Booking.DoesNotExist: # Removed this line
-        #         messages.error(request, 'Invalid train booking ID.') # Removed this line
-        #         return redirect('taxi_booking') # Removed this line
 
         with transaction.atomic():
             new_taxi_booking = TaxiBooking.objects.create(
@@ -1762,12 +1796,16 @@ def confirm_booking_view(request):
                 dropoff_location=to_location,
                 travel_datetime=travel_datetime,
                 fare=selected_taxi.fare,
-                # linked_booking=linked_booking # Removed this line
             )
 
             selected_taxi.availability = False
             selected_taxi.status = 'Booked'
             selected_taxi.save()
+        
+            Notification.objects.create(
+                user=request.user, 
+                message=f"Your taxi from {from_location} to {to_location} has been successfully booked."
+            )
 
         messages.success(request, 'Taxi booked successfully!')
         return redirect(reverse('booking_details', args=[new_taxi_booking.id]))
@@ -1779,10 +1817,8 @@ def confirm_booking_view(request):
         messages.error(request, f'An error occurred: {str(e)}')
         return redirect('taxi_booking')
 
+
 def get_to_locations(request):
-    """
-    Returns a JSON response with a list of 'to' locations for a given 'from' location.
-    """
     from_location = request.GET.get('from_location')
     to_locations = []
     if from_location:
@@ -1793,9 +1829,6 @@ def get_to_locations(request):
     return JsonResponse({'to_locations': to_locations})
 
 def booking_details_view(request, booking_id):
-    """
-    Renders a page showing the details of a single taxi booking.
-    """
     booking = get_object_or_404(TaxiBooking, pk=booking_id) 
     context = {
         'booking': booking,
@@ -1805,9 +1838,6 @@ def booking_details_view(request, booking_id):
 
 @login_required
 def taxi_booking_history(request):
-    """
-    Renders a page with the history of all taxi bookings for the logged-in user.
-    """
     taxi_bookings = TaxiBooking.objects.filter(user=request.user).order_by('-id') 
     context = {
         'taxi_bookings': taxi_bookings,
@@ -1815,13 +1845,11 @@ def taxi_booking_history(request):
     }
     return render(request, 'user/bookingdet.html', context)
 
+
+@never_cache
 @login_required
 @require_POST
 def cancel_taxi_booking(request, booking_id):
-    """
-    Cancels a specific taxi booking. Checks if the booking has already been cancelled
-    and sends a notification to the user.
-    """
     try:
         booking = get_object_or_404(TaxiBooking, pk=booking_id, user=request.user)
 
@@ -1829,52 +1857,74 @@ def cancel_taxi_booking(request, booking_id):
             with transaction.atomic():
                 booking.status = 'Cancelled'
                 booking.save()
+                taxi = booking.taxi 
+                if taxi: 
+                    taxi.availability = True 
+                    taxi.status = 'Available' 
+                    taxi.save()  
+                Notification.objects.create( 
+                    user=request.user,  
+                    message=f"You Taxi with Booking ID:{booking.id} is Successfully Cancelled."
+                )
                 
-                # Make the taxi available again
-                taxi = booking.taxi
-                taxi.availability = True
-                taxi.status = 'Available'
-                taxi.save()
-            
-            Notification.objects.create(
-                user=request.user, 
-                message=f"Aapki taxi booking (ID: {booking.id}) successfully cancel ho gai hai."
-            )
-            
-            messages.success(request, 'Your taxi booking has been successfully cancelled.')
-            return redirect('taxi_booking_history')
+            return JsonResponse({
+                'success': True,
+                'message': 'Your taxi booking has been successfully cancelled.'
+            })
         else:
-            messages.error(request, 'This booking is already cancelled.')
-            return redirect('taxi_booking_history')
+            return JsonResponse({
+                'success': False,
+                'error': 'This booking is already cancelled.'
+            })
 
     except TaxiBooking.DoesNotExist:
-        messages.error(request, 'Booking not found.')
-        return redirect('taxi_booking_history')
+        return JsonResponse({
+            'success': False,
+            'error': 'Booking not found.'
+        }, status=404)
     except Exception as e:
-        messages.error(request, f'An error occurred: {str(e)}')
-        return redirect('taxi_booking_history')
+        logger.exception("Error occurred during taxi booking cancellation.")
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
 
-@login_required
-@require_POST
-def cancel(request, booking_id):
-    """
-    Cancels a train ticket and all associated taxi and hotel bookings.
-    """
-    try:
-        booking = get_object_or_404(Booking, pk=booking_id, user=request.user)
+@login_required 
+@require_POST 
+def cancel(request, booking_id): 
+    try: 
+        booking = get_object_or_404(Booking, pk=booking_id, user=request.user) 
 
-        if booking.status != 'cancelled':
-            with transaction.atomic():
-                # Cancel the train ticket
-                booking.status = 'cancelled'
-                booking.save()
-                
-            messages.success(request, "Aapki booking cancel kar di gai hai.")
-            return redirect('bookinghistory')
+        if booking.status != 'cancelled': 
+            with transaction.atomic(): 
+                booking.status = 'cancelled' 
+                booking.save() 
+                Notification.objects.create( 
+                    user=request.user,  
+                    message=f"Your Booking with ID:{booking.id} is Successfully Cancelled." 
+                ) 
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your Booking has been cancelled.'
+            })
+        else: 
+            return JsonResponse({
+                'success': False,
+                'error': 'This booking is already cancelled.'
+            })
 
-    except Booking.DoesNotExist:
-        messages.error(request, 'Booking not found.')
-        return redirect('bookinghistory')
-    except Exception as e:
-        messages.error(request, f'Error: {str(e)}')
-        return redirect('bookinghistory')
+    except Booking.DoesNotExist: 
+        return JsonResponse({
+            'success': False,
+            'error': 'Booking not found.'
+        }, status=404)
+    except Exception as e: 
+        logger.exception("Error occurred during train booking cancellation.") 
+        return JsonResponse({
+            'success': False,
+            'error': f'Error: {str(e)}'
+        }, status=500)
+@never_cache    
+def cancel_by_id_view(request):
+    return render(request, 'user/cancel_by_id.html')

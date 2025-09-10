@@ -170,7 +170,6 @@ class Booking(models.Model):
         return f"Booking {self.id} by {self.user.full_name}"      
 
 class Payment(models.Model):
-    # Change 'Passenger' to 'get_user_model()' to match the Booking model's user
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     booking = models.OneToOneField('Booking', on_delete=models.CASCADE) 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -183,8 +182,8 @@ class Payment(models.Model):
         return f"Payment for Booking {self.booking.id} by {self.user.username}" 
 
 class Ticket(models.Model):
-    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, primary_key=True)
-    ticket_number = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE)
+    ticket_number = models.CharField(max_length=100, unique=True, default=uuid.uuid4, primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Approved")
 

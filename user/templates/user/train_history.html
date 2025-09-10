@@ -171,13 +171,7 @@
                     </p>
 
                     {% if booking.status|lower == 'approved' %}
-                        <a href="{% url 'ticket' booking_id=booking.id %}" class="btn btn-success">View E-Ticket</a>
-                        
-                       <form method="POST" action="{% url 'cancel_ticket' booking_id=booking.id %}" style="display:inline;">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Cancel Ticket</button>
-</form>
-                        
+                        <a href="{% url 'ticket' booking_id=booking.id %}" class="btn btn-success">View E-Ticket</a>       
                         <a href="{% url 'taxi_booking' %}" class="btn" style="background-color: yellow; color: black;">Book Taxi</a>
                         <a href="{% url 'hotel' %}" class="btn" style="background-color: blue; color: white;">Book Hotel</a>
                     {% endif %}

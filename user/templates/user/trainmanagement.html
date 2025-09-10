@@ -116,16 +116,15 @@
             </table>
         </section>
 
-        <!-- Add Train Form -->
         <section class="form-section">
             <h3>Add Train</h3>
             <form method="POST" action="{% url 'add_train' %}">
                 {% csrf_token %}
                 <label>Train Name:</label>
-                <input type="text" name="train_name" required />
+                <input type="text" name="train_name" required maxlength="25" />
 
                 <label>Train Number:</label>
-                <input type="text" name="train_number" required />
+                <input type="text" name="train_number" required  maxlength="10"/>
 
                 <label>From Station:</label>
                 <select name="from_station" required>
@@ -176,7 +175,7 @@
                 </select>
 
                 <label>Route:</label>
-                <input type="text" name="route" required />
+                <input type="text" name="route" required maxlength="25"/>
 
                     <label>Available Classes:</label>
                     <input type="text" name="classes" placeholder="Enter Classes">
@@ -192,7 +191,7 @@
 
                 <label>Total Seats:</label>
 <input type="number" name="total_seats" value="{{ train.total_seats }}" required><br><br>
-<p>Currently Available Seats: {{ train.seats_available }}</p>
+
 {% if error %}
     <p style="color:red;">{{ error }}</p>
 {% endif %}
@@ -201,7 +200,6 @@
             </form>
         </section>
 
-        <!-- Update Train Form -->
         <section class="form-section">
             <h3>Update Train</h3>
             <form method="POST" action="{% url 'update_train' %}">
@@ -216,7 +214,7 @@
                 </select>
 
                 <label>New Train Name:</label>
-                <input type="text" name="train_name" />
+                <input type="text" name="train_name" maxlength="25"/>
 
                 <label>New From Station:</label>
                 <input type="text" name="from_station" />
@@ -237,6 +235,9 @@
 
                 <label>New Arrival Time:</label>
                 <input type="time" name="arrival_time" />
+
+                 <label>Total Seats:</label>
+                 <input type="number" name="total_seats" value="{{ train.total_seats }}" required><br><br>
 
                 <button type="submit">Update Train</button>
             </form>

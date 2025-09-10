@@ -44,7 +44,7 @@
                     <label for="check-out-date">Check-out Date</label>
                     <input type="date" class="form-control" id="check-out-date" name="check_out_date" required value="{{ check_out_date|default:'' }}">
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary btn-block">Search Hotels</button>
             </form>
         </div>
@@ -72,7 +72,7 @@
             </div>
             {% endfor %}
         </div>
-        {% else %}
+        {% elif searched %}
         <div class="alert alert-warning mt-4">
             No hotel Found.
         </div>
@@ -84,7 +84,7 @@
                 {% csrf_token %}
                 <input type="hidden" id="booking-hotel-id" name="hotel_id">
                 <div class="form-group">
-                    
+
                     <label>Check-in Date:</label>
                     <input type="date" id="booking-check-in" name="check_in_date" class="form-control" readonly>
                 </div>
@@ -109,11 +109,11 @@
             function showMessage(type, message) {
                 messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
             }
-            
+
             function updateHotelDropdown() {
                 const selectedLocation = locationSelect.value;
                 hotelNameSelect.innerHTML = '<option value="">All Hotels</option>';
-                
+
                 if (selectedLocation) {
                     fetch(`{% url 'get_hotels_by_location' %}?location=${selectedLocation}`)
                         .then(response => response.json())
@@ -128,7 +128,7 @@
                         .catch(error => console.error('Error fetching hotels:', error));
                 }
             }
-            
+
             locationSelect.addEventListener('change', updateHotelDropdown);
 
             document.querySelectorAll('.book-hotel-btn').forEach(button => {
@@ -156,7 +156,7 @@
                     if (data.success) {
                         showMessage('success', data.message);
                         setTimeout(() => {
-                            window.location.href = '{% url "hoteldetails" %}'; 
+                            window.location.href = '{% url "hoteldetails" %}';
                         }, 2000);
                     } else {
                         showMessage('danger', 'Error: ' + data.error);
