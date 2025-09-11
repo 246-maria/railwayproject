@@ -183,7 +183,7 @@
           <td>{{ taxi.status }}</td>
           <td>{{ taxi.availability }}</td>
           <td>
-            <button class="btn btn-primary" onclick="editTaxi('{{ taxi.pk }}', '{{ taxi.driver_name }}', '{{ taxi.driver_contact }}', '{{ taxi.taxi_number }}', '{{ taxi.from_location }}', '{{ taxi.to_location }}', '{{ taxi.city }}', '{{ taxi.total_fare }}', '{{ taxi.availability }}', '{{ taxi.booking_status }}')">Edit</button>
+            <button class="btn btn-primary" onclick="editTaxi('{{ taxi.pk }}', '{{ taxi.driver_name }}', '{{ taxi.driver_contact }}', '{{ taxi.taxi_number }}','{{taxi.taxi_name}}', '{{ taxi.from_location }}', '{{ taxi.to_location }}', '{{ taxi.city }}', '{{ taxi.total_fare }}', '{{ taxi.availability }}', '{{ taxi.booking_status }}')">Edit</button>
             <form action="{% url 'taxi_management' %}" method="POST" style="display:inline;">
               {% csrf_token %}
               <input type="hidden" name="action" value="delete">

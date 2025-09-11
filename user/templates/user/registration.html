@@ -8,15 +8,14 @@
     <link rel="stylesheet" href="{% static 'css/registration.css' %}">
 </head>
 <body>
-  <div class="container">
+    <div class="container">
         <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
             REGISTER YOURSELF AS RAILWAY RESERVATION USER
         </h2>
 
-       <form method="POST" action="{% url 'registration' %}" onsubmit="return validateForm(event)">
-
+        <form method="POST" action="{% url 'registration' %}" onsubmit="return validateForm(event)">
             {% csrf_token %}
 
             <label>Full Name:</label>
@@ -32,32 +31,29 @@
             <input type="email" name="confirm_email" placeholder="abc@gmail.com" required>
 
             <label>CNIC No:</label>
-            <input type="text" name="cnic" id="cnicNumber" placeholder="1234567891234" maxlength="13" required>
+            <input type="text" name="cnic" id="cnicNumber" placeholder="00000-0000000-0" maxlength="15" required>
 
-             <div style="position: relative; margin-top: 10px;">
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password"
-        placeholder="Enter your password"
-        style="width: 91%; padding-right: 30px;">
+            <div style="position: relative; margin-top: 10px;">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password"
+                    placeholder="Enter your password"
+                    style="width: 91%; padding-right: 30px;">
+                <input type="checkbox" onclick="togglePassword('password')"
+                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+            </div>
 
-    <input type="checkbox" onclick="togglePassword('password')"
-        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
-    
-</div>
-
-<div style="position: relative; margin-top: 10px;">
-    <label for="confirm_password">Confirm Password:</label>
-    <input type="password" id="confirm_password" name="confirm_password"
-        placeholder="Confirm your password"
-        style="width: 91%; padding-right: 30px;">
-    <input type="checkbox" onclick="togglePassword('confirm_password')"
-        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
-    
-</div>
+            <div style="position: relative; margin-top: 10px;">
+                <label for="confirm_password">Confirm Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password"
+                    placeholder="Confirm your password"
+                    style="width: 91%; padding-right: 30px;">
+                <input type="checkbox" onclick="togglePassword('confirm_password')"
+                    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+            </div>
 
             <label>Enter Code:</label>
             <div class="captcha">
-                <div class="captcha-code" id="captchaCode">ABCDE</div>
+                <div class="captcha-code" id="captchaCode"></div>
                 <input type="text" id="captchaInput" name="captcha_input" placeholder="Enter Captcha" required>
                 <button type="button" onclick="generateCaptcha()">↻</button>
             </div>
@@ -68,18 +64,13 @@
                 <a href="{% url 'termcondition' %}">Terms and Conditions</a>.
             </div>
 
-           <button type="submit">Submit</button>
-
+            <button type="submit">Submit</button>
 
             <div class="login-link">
                 Already have an account? <a href="{% url 'newlogin' %}">Login here</a>
             </div>
         </form>
     </div>
-    <script>
-    const profileURL = "{% url 'profile' %}";  
-</script>
     <script src="{% static 'js/registration.js' %}"></script>
-    
 </body>
 </html>

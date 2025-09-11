@@ -4,21 +4,21 @@ from django.utils import timezone
 from django.conf import settings
 import uuid
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator, EmailValidator
+from django.core.validators import RegexValidator
 
 name_validator = RegexValidator(
     regex=r'^[A-Za-z ]+$',
-    message='Name me sirf letters aur spaces allowed.'
+    message='Only Letters are Allowed in name.'
 )
 
 phone_validator = RegexValidator(
     regex=r'^\d{11}$',
-    message='Mobile me sirf 11 digits honi chahiyen.'
+    message='Mobile Number Contain only 11-digits.'
 )
 
 com_email_validator = RegexValidator(
     regex=r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.com$',
-    message='Sirf .com email accept hogi (e.g., name@example.com).'
+    message='only .com email is accepted (e.g., name@example.com).'
 )
 
 
@@ -64,7 +64,7 @@ class Passenger(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(validators=[com_email_validator], unique=True)
     full_name = models.CharField(max_length=255, validators=[name_validator])
     mobile = models.CharField(max_length=11, validators=[phone_validator], unique=True)
-    cnic = models.CharField(max_length=13)
+    cnic = models.CharField(max_length=15)
     is_active = models.BooleanField(default=True)
     is_blocked = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -112,8 +112,7 @@ class Feedback(models.Model):
 
     user_name = models.CharField(max_length=100)
     user_email = models.EmailField()
-    
-    # User ka feedback
+
     feedback_text = models.TextField()
    
     submitted_at = models.DateTimeField(default=timezone.now)
@@ -194,7 +193,7 @@ class Taxi(models.Model):
 
     taxi_id = models.AutoField(primary_key=True)
     taxi_name = models.CharField(max_length=100)
-    taxi_number = models.CharField(max_length=20, unique=True)
+    taxi_number = models.CharField(max_length=20, unique=False)
     driver_name = models.CharField(max_length=100)
     driver_contact = models.CharField(max_length=15) 
     city = models.CharField(max_length=100)  

@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>User Profile</title>
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -43,10 +44,8 @@
         .navbar .nav-links {
             list-style: none;
             display: flex;
-
             margin: 0;
             padding: 0;
-
         }
         .navbar .nav-links li {
             position: relative;
@@ -82,7 +81,6 @@
         .user-icons {
             display: flex;
             align-items: center;
-            
         }
         .user-icons .icon-link {
             position: relative;
@@ -107,9 +105,79 @@
             padding: 20px;
             text-align: center;
         }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .modal-content p {
+            margin-bottom: 25px;
+        }
+        .modal-content .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .modal-content button:active {
+            transform: scale(0.95);
+        }
+        .modal-content .confirm-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+        .modal-content .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .modal-content .confirm-btn:hover {
+            background-color: #c9302c;
+        }
+        .modal-content .cancel-btn:hover {
+            background-color: #e0e0e0;
+        }
     </style>
 </head>
 <body>
+
+<div id="logout-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Are you sure you want to log out?</h3>
+        <p>You will be redirected to the login page.</p>
+        <div class="modal-buttons">
+            <button class="confirm-btn" id="confirm-logout">Yes, Log Out</button>
+            <button class="cancel-btn" id="cancel-logout">Cancel</button>
+        </div>
+    </div>
+</div>
 
 <nav class="navbar">
     <div class="logo">
@@ -121,7 +189,7 @@
         <li><a href="{% url 'bookinghistory' %}">Booking Details</a></li>
         <li><a href="{% url 'cancelbooking' %}">Cancel Booking</a></li>
         <li><a href="{% url 'upgrade' %}">Upgrade Profile</a></li>
-        <li><a href="#" onclick="logout()">Logout</a></li>
+        <li><a href="#" id="logout-link">Logout</a></li>
     </ul>
   <div class="user-icons">
     <a href="{% url 'prodetails' %}" class="icon-link">
@@ -155,18 +223,19 @@
     document.addEventListener('DOMContentLoaded', updateNotifications);
     setInterval(updateNotifications, 10000);
 
-    function logout() {
-        console.log('User logged out.');
-        window.location.href = "{% url 'user_login' %}";
-    }
     const images = [
         "{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}",
-        "{% static 'images/IMG-20250901-WA0024.jpg' %}",
+        "{% static 'images/image105.jpg' %}",
         "{% static 'images/IMG-20250901-WA0029.jpg' %}",
-        "{% static 'images/IMG-20250901-WA0030.jpg' %}",
+        "{% static 'images/image103.jpg' %}",
         "{% static 'images/IMG-20250901-WA0031.jpg' %}",
-        "{% static 'images/IMG-20250901-WA0032.jpg' %}"
-        
+        "{% static 'images/image102.jpg' %}",
+        "{% static 'images/image106.jpg' %}",
+        "{% static 'images/image107.jpg' %}",
+        "{% static 'images/image108.jpg' %}",
+        "{% static 'images/image109.jpg' %}",
+        "{% static 'images/images.jpeg' %}",
+         "{% static 'images/image10.jpg' %}",
     ];
     let currentIndex = 0;
 
@@ -176,7 +245,37 @@
     }
     document.body.style.backgroundImage = `url('${images[currentIndex]}')`;
 
-    setInterval(changeBackground, 3000); // 3000 milliseconds = 3 seconds
+    setInterval(changeBackground, 3000);
+
+    const logoutLink = document.getElementById('logout-link');
+    const modal = document.getElementById('logout-modal');
+    const confirmBtn = document.getElementById('confirm-logout');
+    const cancelBtn = document.getElementById('cancel-logout');
+
+    function showLogoutModal() {
+        modal.style.display = 'flex';
+    }
+
+    function hideLogoutModal() {
+        modal.style.display = 'none';
+    }
+
+    function performLogout() {
+        window.location.href = "{% url 'user_login' %}";
+    }
+
+    logoutLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        showLogoutModal();
+    });
+
+    confirmBtn.addEventListener('click', function() {
+        performLogout();
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        hideLogoutModal();
+    });
 </script>
 
 </body>

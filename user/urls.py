@@ -45,7 +45,7 @@ urlpatterns = [
     #admin profile
     path('adminprodetails/', views.adminprodetails, name='adminprodetails'),
     path('adminlogout/', views.adminlogout, name='adminlogout'),
-    path('admin_edit_profile/', views.admin_edit_profile, name='admin_edit_profile'),
+    path('update_admin_profile/', views.update_admin_profile, name='update_admin_profile'),
 
     # FAQs
     path('managefaqs/', views.managefaqs, name='managefaqs'),

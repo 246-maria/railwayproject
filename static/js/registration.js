@@ -6,6 +6,7 @@ function generateCaptcha() {
     }
     document.getElementById('captchaCode').textContent = captcha;
 }
+
 window.onload = generateCaptcha;
 
 function togglePassword(fieldId) {
@@ -28,138 +29,134 @@ function showValidationError(inputElement, message) {
     errorElement.textContent = message;
 }
 
-function validateField(inputElement) {
-    const name = inputElement.name;
-    const value = inputElement.value.trim();
+function clearValidationErrors() {
+    const errors = document.querySelectorAll('.validation-error');
+    errors.forEach(el => el.textContent = '');
+}
 
-    // Clear previous error
-    showValidationError(inputElement, '');
+function validateForm(event) {
+    clearValidationErrors();
+
+    const fullNameInput = document.querySelector('[name="full_name"]');
+    const mobileInput = document.querySelector('[name="mobile"]');
+    const emailInput = document.querySelector('[name="email"]');
+    const confirmEmailInput = document.querySelector('[name="confirm_email"]');
+    const cnicInput = document.querySelector('[name="cnic"]');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const captchaCode = document.getElementById('captchaCode').textContent.trim();
+    const captchaInput = document.getElementById('captchaInput').value.trim();
+
+    let isFormValid = true;
 
     // Full Name Validation
-    if (name === 'full_name' && value !== '') {
-        // Regex to check for first letter capital, then only letters and spaces
-        if (!/^[A-Z][A-Za-z\s]*$/.test(value)) {
-            showValidationError(inputElement, 'Name should start with a capital letter and only contain letters and spaces.');
-            return false;
-        }
+    if (!/^[A-Z][A-Za-z\s]*$/.test(fullNameInput.value.trim())) {
+        showValidationError(fullNameInput, 'Name should start with a capital letter and only contain letters and spaces.');
+        isFormValid = false;
     }
 
     // Mobile Number Validation
-    if (name === 'mobile' && value !== '') {
-        if (!/^\d{11}$/.test(value)) {
-            showValidationError(inputElement, 'Mobile number must be exactly 11 digits.');
-            return false;
-        }
-    }
-
-    // CNIC Validation
-    if (name === 'cnic' && value !== '') {
-        if (!/^\d{13}$/.test(value)) {
-            showValidationError(inputElement, 'CNIC must be exactly 13 digits.');
-            return false;
-        }
+    if (!/^\d{11}$/.test(mobileInput.value.trim())) {
+        showValidationError(mobileInput, 'Mobile number must be exactly 11 digits.');
+        isFormValid = false;
     }
 
     // Email Validation
-    if (name === 'email' && value !== '') {
-        if (!value.endsWith("@gmail.com")) {
-            showValidationError(inputElement, 'Only @gmail.com emails are allowed.');
-            return false;
-        }
+    if (!emailInput.value.trim().endsWith("@gmail.com")) {
+        showValidationError(emailInput, "Only @gmail.com emails are allowed.");
+        isFormValid = false;
+    }
+
+    // Confirm Email Validation
+    if (emailInput.value.trim() !== confirmEmailInput.value.trim()) {
+        showValidationError(confirmEmailInput, 'Emails do not match.');
+        isFormValid = false;
     }
     
-    // Confirm Email Validation (optional but good to have)
-    if (name === 'confirm_email' && value !== '') {
-        const email = document.querySelector('[name="email"]').value.trim();
-        if (value !== email) {
-            showValidationError(inputElement, 'Emails do not match.');
-            return false;
-        }
+    // CNIC Validation (now checks for 5-7-1 format with hyphens)
+    if (!/^\d{5}-\d{7}-\d{1}$/.test(cnicInput.value.trim())) {
+        showValidationError(cnicInput, 'Please enter CNIC in the format 00000-0000000-0.');
+        isFormValid = false;
     }
 
     // Password Validation
-    if (name === 'password' && value !== '') {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
-        if (!passwordRegex.test(value)) {
-            showValidationError(inputElement, 'Password must be 8-25 characters, with uppercase, number, and special character.');
-            return false;
-        }
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
+    if (!passwordRegex.test(passwordInput.value)) {
+        showValidationError(passwordInput, 'Password must be 8-25 characters, with uppercase, number, and special character.');
+        isFormValid = false;
     }
 
     // Confirm Password Validation
-    if (name === 'confirm_password' && value !== '') {
-        const password = document.getElementById('password').value;
-        if (value !== password) {
-            showValidationError(inputElement, 'Passwords do not match.');
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// Attach event listeners for on-the-fly validation
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('blur', (event) => {
-            validateField(event.target);
-        });
-    });
-});
-
-function validateForm(event) {
-    const full_name = document.querySelector('[name="full_name"]').value.trim();
-    const mobile = document.querySelector('[name="mobile"]').value.trim();
-    const email = document.querySelector('[name="email"]').value.trim();
-    const confirm_email = document.querySelector('[name="confirm_email"]').value.trim();
-    const cnic = document.querySelector('[name="cnic"]').value.trim();
-    const password = document.getElementById('password').value;
-    const confirm_password = document.getElementById('confirm_password').value;
-    const captchaCode = document.getElementById('captchaCode').textContent.trim();
-    const captchaInput = document.getElementById('captchaInput').value.trim();
-    
-    let isFormValid = true;
-    if (!/^[A-Z][A-Za-z\s]*$/.test(full_name)) {
-        alert('Name should start with a capital letter and only contain letters and space.');
+    if (passwordInput.value !== confirmPasswordInput.value) {
+        showValidationError(confirmPasswordInput, 'Passwords do not match.');
         isFormValid = false;
     }
 
-    if (!/^\d{11}$/.test(mobile)) {
-        alert('Mobile number must be exactly 11 digits letter or mixture of number or letter is not allowed.');
-        isFormValid = false;
-    }
-
-    if (!email.endsWith("@gmail.com")) {
-        alert("Only @.com emails are allowed.");
-        isFormValid = false;
-    }
-
-    if (email !== confirm_email) {
-        alert('Emails do not match.');
-        isFormValid = false;
-    }
-    
-    if (!/^\d{13}$/.test(cnic)) {
-        alert('CNIC must be exactly 13 digits.');
-        isFormValid = false;
-    }
-
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
-    if (!passwordRegex.test(password)) {
-        alert('Password must be 8-30 characters, with uppercase, number, and special character.');
-        isFormValid = false;
-    }
-    if (password !== confirm_password) {
-        alert('Passwords do not match.');
-        isFormValid = false;
-    }
+    // Captcha Validation
     if (captchaCode.toUpperCase() !== captchaInput.toUpperCase()) {
-        alert('Captcha code is incorrect.');
+        const captchaInputElement = document.getElementById('captchaInput');
+        showValidationError(captchaInputElement, 'Captcha code is incorrect.');
         isFormValid = false;
     }
+
     if (!isFormValid) {
         event.preventDefault();
+        const firstError = document.querySelector('.validation-error:not(:empty)');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 
     return isFormValid;
 }
+
+// Attach a 'blur' event listener to all input fields for live validation.
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('blur', (event) => {
+            const name = event.target.name;
+            const value = event.target.value.trim();
+            showValidationError(event.target, '');
+            switch (name) {
+                case 'full_name':
+                    if (value && !/^[A-Z][A-Za-z\s]*$/.test(value)) {
+                        showValidationError(event.target, 'Name should start with a capital letter and only contain letters and spaces.');
+                    }
+                    break;
+                case 'mobile':
+                    if (value && !/^\d{11}$/.test(value)) {
+                        showValidationError(event.target, 'Mobile number must be exactly 11 digits.');
+                    }
+                    break;
+                case 'email':
+                    if (value && !value.endsWith("@gmail.com")) {
+                        showValidationError(event.target, "Only @gmail.com emails are allowed.");
+                    }
+                    break;
+                case 'confirm_email':
+                    const email = document.querySelector('[name="email"]').value.trim();
+                    if (value && value !== email) {
+                        showValidationError(event.target, 'Emails do not match.');
+                    }
+                    break;
+                case 'cnic':
+                    if (value && !/^\d{5}-\d{7}-\d{1}$/.test(value)) {
+                        showValidationError(event.target, 'Please enter CNIC in the format 12345-1234567-1.');
+                    }
+                    break;
+                case 'password':
+                    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
+                    if (value && !passwordRegex.test(value)) {
+                        showValidationError(event.target, 'Password must be 8-25 characters, with uppercase, number, and special character.');
+                    }
+                    break;
+                case 'confirm_password':
+                    const password = document.getElementById('password').value;
+                    if (value && value !== password) {
+                        showValidationError(event.target, 'Passwords do not match.');
+                    }
+                    break;
+            }
+        });
+    });
+});

@@ -24,7 +24,9 @@ from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.core.mail import EmailMessage
-from .forms import FAQForm, PassengerForm
+from .forms import FAQForm, PassengerForm, AdminProfileForm
+from django.contrib.auth.models import User  
+from .models import Passenger, FAQ 
 from django.db.models import Q
 from decimal import Decimal
 import uuid
@@ -33,11 +35,8 @@ from .models import (Train, FAQ, Notification, Feedback,
 )
 User = get_user_model()
 logger = logging.getLogger(__name__)
-from django import forms
-class AdminProfileForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['full_name', 'mobile', 'cnic', 'email']
+
+
 def is_admin(user):
     return user.is_superuser
 @never_cache
@@ -539,10 +538,6 @@ def admin_feedback_panel(request):
 @login_required
 def update_profile(request):
     user_instance = request.user
-    
-    # Assuming 'mobile' and 'cnic' are fields on a custom user model
-    # If they are on a separate profile model, this approach needs adjustment.
-    
     form = PassengerForm(request.POST or None, instance=user_instance)
     
     if request.method == 'POST':
@@ -551,8 +546,6 @@ def update_profile(request):
             
             new_password = request.POST.get('password')
             confirm_password = request.POST.get('confirmPassword')
-
-            # Handle password change logic
             if new_password:
                 if new_password != confirm_password:
                     messages.error(request, 'Passwords do not match.')
@@ -561,12 +554,9 @@ def update_profile(request):
                 user.set_password(new_password)
 
             user.save()
-            
-            # Update the custom fields directly from the form data
-            # This is a key step to ensure custom fields are saved
             user.mobile = form.cleaned_data.get('mobile', user.mobile)
             user.cnic = form.cleaned_data.get('cnic', user.cnic)
-            user.save(update_fields=['mobile', 'cnic']) # Saves only specific fields
+            user.save(update_fields=['mobile', 'cnic']) 
 
             if new_password:
                 update_session_auth_hash(request, user)
@@ -591,67 +581,70 @@ def prodetails(request):
     user_instance = request.user
     return render(request, 'user/prodetails.html', {'user': user_instance})
 
-
-
 @login_required
 def adminprodetails(request):
-    admin = User.objects.filter(is_superuser=True).first()
+    # Sirf superuser ko access do
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('index')
+
+    admin = request.user
     context = {
         "admin": admin
     }
     return render(request, "user/adminprodetails.html", context)
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout, update_session_auth_hash
+from django.contrib import messages
+from django.shortcuts import redirect, render
 
 def adminlogout(request):
     logout(request)
-    return redirect('home') # 'home' should be the name of your home page URL
+    return redirect('home')
 
+@login_required
+def update_admin_profile(request):
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('index')
 
-@staff_member_required
-def admin_edit_profile(request):
     admin_user = request.user
-    
-    if request.method == "POST":
-        form = AdminProfileForm(request.POST, instance=admin_user)
-        new_password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
 
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    # Handle password change separately from form save
-                    if new_password:
-                        if new_password != confirm_password:
-                            messages.error(request, "New password and confirm password do not match.")
-                            return render(request, "user/updateprofile.html", {'user': admin_user, 'form': form})
-                        
-                        admin_user.set_password(new_password)
-                        
-                    form.save() # This saves full_name, mobile, cnic, and email
-                    admin_user.save() # This saves the new password if it was set
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        mobile = request.POST.get('mobile')
+        cnic = request.POST.get('cnic')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
 
-                    if new_password:
-                        update_session_auth_hash(request, admin_user)
-                        messages.success(request, "Profile and password updated successfully!")
-                    else:
-                        messages.success(request, "Profile updated successfully!")
-                    
-                    return redirect("admin_edit_profile")
-            
-            except Exception as e:
-                messages.error(request, f"Profile update failed: {e}")
-                
-        else:
-            messages.error(request, "Please correct the errors below.")
-            
-    else:
-        form = AdminProfileForm(instance=admin_user)
-        
+        # Password match check
+        if password and password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('update_admin_profile')
+
+        # Update fields
+        admin_user.full_name = full_name
+        admin_user.email = email
+        admin_user.mobile = mobile
+        admin_user.cnic = cnic
+
+        if password:
+            admin_user.set_password(password)
+
+        admin_user.save()
+        update_session_auth_hash(request, admin_user)
+        messages.success(request, 'Your profile has been successfully updated.')
+        return redirect('adminprodetails')
+
     context = {
         'user': admin_user,
-        'form': form,
+        'mobile': admin_user.mobile,
+        'cnic': admin_user.cnic,
     }
-    return render(request, "user/updateprofile.html", context)
+    return render(request, 'updateprofile.html', context)
+
 
 def manage_services(request):
 
@@ -669,6 +662,7 @@ def taxi_management(request):
                     driver_name=request.POST.get('driver_name'),
                     driver_contact=request.POST.get('driver_contact'),
                     taxi_number=request.POST.get('taxi_number'),
+                    taxi_name=request.POST.get('taxi_name'),
                     availability=request.POST.get('availability') == 'True',
                     from_location=request.POST.get('from_location'),
                     to_location=request.POST.get('to_location'),
@@ -688,6 +682,7 @@ def taxi_management(request):
                 taxi.driver_name = request.POST.get('driver_name')
                 taxi.driver_contact = request.POST.get('driver_contact')
                 taxi.taxi_number = request.POST.get('taxi_number')
+                taxi.taxi_name=request.POST.get('taxi_name')
                 taxi.availability = request.POST.get('availability') == 'True'
                 taxi.from_location = request.POST.get('from_location') 
                 taxi.to_location = request.POST.get('to_location') 
@@ -735,7 +730,7 @@ def hotel_management(request):
             available_rooms = request.POST.get('available_rooms')
             total_rooms = request.POST.get('total_rooms')
             facilities = request.POST.get('facilities')
-
+            booking_date = request.POST.get('booking_date')
             Hotel.objects.create(
                 hotel_name=hotel_name,
                 contact_number=contact_number,
@@ -743,7 +738,8 @@ def hotel_management(request):
                 room_rent=room_rent,
                 available_rooms=available_rooms,
                 total_rooms=total_rooms,
-                facilities=facilities
+                facilities=facilities,
+                booking_date =booking_date
             )
             messages.success(request, 'Hotel added successfully.')
             return redirect('hotel_management')
@@ -759,6 +755,7 @@ def hotel_management(request):
             hotel.available_rooms = request.POST.get('available_rooms')
             hotel.total_rooms = request.POST.get('total_rooms')
             hotel.facilities = request.POST.get('facilities')
+            hotel.booking_date = request.POST.get('booking_date')
             
             hotel.save()
             messages.success(request, 'Hotel updated successfully.')
