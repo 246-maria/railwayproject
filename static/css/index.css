@@ -1,18 +1,14 @@
+/*-- Base Styles (Mobile-First Approach) --*/
 
 body,
 html {
     font-family: 'Times New Roman', Times, serif;
     margin: 0;
     padding: 0;
-    height: 100%;
     width: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* No background on body, will be set on a specific section */
     transition: background-image 1s ease-in-out;
 }
-
-
 
 .content {
     position: relative;
@@ -23,25 +19,29 @@ html {
     font-family: 'Times New Roman', Times, serif;
 }
 
+/*--- Navbar Styles ---*/
 .navbar {
     background-color: darkgreen;
     color: white;
     padding: 15px;
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
     font-family: 'Times New Roman', Times, serif;
 }
 
 .navbar .logo {
     display: flex;
     align-items: center;
-    font-size: 28px;
+    font-size: 1.5em;
     font-weight: bold;
     color: white;
     text-align: left;
 }
 
 .logo img {
-    width: 50px;
+    width: 40px; /* Reduced logo size for better mobile fit */
     height: auto;
     margin-right: 10px;
     border-radius: 50%;
@@ -50,246 +50,235 @@ html {
 .navbar .nav-links {
     list-style: none;
     padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
 }
 
 .navbar .nav-links li {
     display: inline;
-    margin-right: 20px;
 }
 
 .navbar .nav-links a {
     color: white;
     text-decoration: none;
+    font-size: 1em;
 }
 
 .navbar .nav-links a:hover {
     text-decoration: underline;
 }
 
+/*--- Home Section ---*/
 .home {
-    background-color: transparent;
+    background-image: url(../images/badar-ul-islam-majid-ABPY7duAEGo-unsplash.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-
-
+    color: white;
 }
 
 .home h1 {
-    background-image: url(../images/badar-ul-islam-majid-ABPY7duAEGo-unsplash.jpg);
-    text-align: center;
-    color: white;
-    font-size: 60px;
-    margin-top: 1px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 2000px;
-    height: 70vh;
-    margin-top: 0%;
+    font-size: 2.5em;
+    margin: 0;
+    padding: 0 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
-
-
+/*--- About Section ---*/
 #about {
-    padding: 60px 20px 20px;
+    padding: 40px 20px;
     background-color: white;
     text-align: center;
-    font-family: 'Times New Roman', Times, serif;
-    font-size: larger;
+    font-size: 1em;
+    line-height: 1.6;
 }
 
-
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: darkgreen;
-    min-width: 160px;
-    z-index: 1;
-    list-style-type: none;
-    padding: 0;
-}
-
-.dropdown-menu li {
-    display: block;
-}
-
-.dropdown-menu a {
-    color: lightgreen;
-    padding: 12px 32px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-menu a:hover {
-    background-color: rgb(58, 179, 58);
-}
-
-
-.booking-form {
-    background-color: #f4f4f4;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 8px;
-}
-
-.booking-form h2 {
+#about h2 {
+    font-size: 2em;
     margin-bottom: 20px;
 }
 
-.booking-form form {
-    display: flex;
-    flex-direction: column;
-}
-
-.booking-form label {
-    margin-bottom: 5px;
-}
-
-.booking-form input {
-    margin-bottom: 10px;
-    padding: 8px;
-}
-
-.booking-form button {
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-}
-
-.booking-form button:hover {
-    background-color: #575757;
-}
 
 .gallery-container {
     width: 100%;
-    overflow: scroll;
+    overflow: hidden;
     white-space: nowrap;
     position: relative;
     text-align: center;
     font-family: 'Times New Roman', Times, serif;
-    scroll-behavior: smooth;
-}
-
-.gallery-container::-webkit-scrollbar {
-
-    height: 10px;
-}
-
-.gallery-container::-webkit-scrollbar-thumb {
-    background: #999;
-    border-radius: 5px;
 }
 
 .gallery {
     display: inline-flex;
     width: fit-content;
-    overflow: auto;
-
+    animation: gallery-scroll 30s linear infinite;
 }
 
 .gallery img {
-    width: 100%;
-    max-width: 250px;
-    margin-right: 10px;
-    border-radius: 8px;
+    width: 250px;
+    height: 200px;
     object-fit: cover;
+    margin: 0 10px;
+    border-radius: 8px;
+    
 }
 
-@keyframes scrollGallery {
+@keyframes gallery-scroll {
     0% {
         transform: translateX(0);
     }
-
     100% {
         transform: translateX(-50%);
     }
 }
 
-::-webkit-scrollbar {
-    height: 10px;
-}
-
-h2 {
+/*--- FAQs Section ---*/
+#faqs h2 {
     text-align: center;
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 33px;
+    font-size: 2em;
+    margin-top: 40px;
 }
 
-.feedback,
-h1 {
-
-    margin-top: 10px;
-    padding: 50px;
-    background-color: #f9f9f9;
+.faq-container {
+    max-width: 90%;
+    margin: 20px auto;
 }
 
-.feedback-container {
-    font-family: 'Times New Roman', Times, serif;
+.faq-item {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1em;
+    padding: 8px;
+}
+
+.toggle-icon {
+    font-size: 1.5em;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.faq-answer {
+    display: none;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.5;
+    padding-left: 10px;
+}
+
+/*--- Feedback Section ---*/
+#feedback {
+    width: 90%;
     max-width: 600px;
-    margin: auto;
-    background-color: rgb(255, 255, 255);
-    padding-top: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 30px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.feedback-container h2 {
-    color: darkgreen;
+#feedback h2 {
     text-align: center;
     margin-bottom: 20px;
+    color: #333;
 }
 
-.feedback-container input,
-.feedback-container textarea {
-    width: 578px;
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.feedback-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #444;
+}
+
+.feedback-form input,
+.feedback-form textarea {
     padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #aaa;
-    border-radius: 5px;
-    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.feedback-container button {
-    width: 600px;
-    padding: 15px;
-    margin: 10px 0;
+.feedback-form input:focus,
+.feedback-form textarea:focus {
+    outline: none;
+    border-color: darkgreen;
+    box-shadow: 0px 0px 5px rgba(40, 167, 69, 0.4);
+}
+
+.feedback-form button {
     background-color: darkgreen;
     color: white;
-    border: none;
     font-size: 16px;
-    border-radius: 10px;
+    font-weight: bold;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    transition: 0.3s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.feedback-container button:hover {
-    background-color: green;
-
+.feedback-form button:hover {
+    background-color: #218838;
 }
 
-.message {
+.feedback-messages {
+    list-style: none;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
     text-align: center;
-    margin-top: 20px;
     font-weight: bold;
 }
+.feedback-messages li {
+    margin: 0;
+    padding: 0;
+}
+.feedback-messages li.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
 
 
+/*--- Footer ---*/
 footer {
     background-color: darkgreen;
     color: black;
     text-align: center;
     padding: 10px;
-    position: relative;
-    bottom: 0;
     width: 100%;
+    box-sizing: border-box;
 }
-
+#gallery h2{
+     text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
 footer p,
 p {
     margin: 0;
@@ -297,48 +286,38 @@ p {
     font-family: 'Times New Roman', Times, serif;
 }
 
-.contact-us {
-    text-align: center;
-    font-family: 'Times New Roman', Times, serif;
-    padding-top: 0%;
+/*--- Media Queries for Responsive Design ---*/
 
+/* Small devices (phones, 480px and up) */
+@media screen and (min-width: 480px) {
+    .home h1 {
+        font-size: 3em;
+    }
 }
 
-.contact-us h2 {
-    text-align: center;
-    font-size: 32px;
-    margin-bottom: 40px;
+/* Medium devices (tablets, 768px and up) */
+@media screen and (min-width: 768px) {
+    .navbar {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .navbar .nav-links {
+        gap: 20px;
+    }
+    .home h1 {
+        font-size: 4em;
+    }
+    .faq-container {
+        max-width: 700px;
+    }
 }
 
-.contact-us {
-    padding: 50px;
-    background-color: #f1f1f1;
+/* Large devices (desktops, 1024px and up) */
+@media screen and (min-width: 1024px) {
+    .navbar .nav-links a {
+        font-size: 1.1em;
+    }
+    .home h1 {
+        font-size: 5em;
+    }
 }
-        .gallery-container {
-            width: 100%;
-            overflow: hidden; 
-            white-space: nowrap; 
-        }
-        
-        .gallery {
-            display: flex;
-            width: fit-content;
-            animation: gallery-scroll 30s linear infinite; 
-        }
-
-        .gallery img {
-            width: 250px;
-            height: 200px;
-            object-fit: cover;
-            margin: 0 10px;
-        }
-
-       
-        @keyframes gallery-scroll {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }

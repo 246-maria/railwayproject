@@ -5,54 +5,66 @@
     <title>Upgrade Admin Profile</title>
     <link rel="stylesheet" href="{% static 'css/updateprofile.css' %}">
     <style>
-        .error-message { color: red; font-size: 0.8em; margin-top: 5px; margin-bottom: 10px; }
+        .error-message {
+            color: red;
+            font-size: 0.8em;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="update-container">
-    <h2 style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;">
-        <img src="{% static 'images/logo.jpg' %}" alt="Logo" style="width:50px;">
-        Update Admin Profile
-    </h2>
+    <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+    Update Admin Profile</h2>
 
     {% if messages %}
         <div class="messages">
             {% for message in messages %}
-                <div class="alert {{ message.tags }}">{{ message }}</div>
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
             {% endfor %}
         </div>
     {% endif %}
 
-    <form method="POST" id="adminProfileForm">
+    <form method="POST">
         {% csrf_token %}
-
         <label>Full Name:</label>
         <input type="text" name="full_name" value="{{ user.full_name }}" required maxlength="25">
         <div id="full-name-error" class="error-message"></div>
 
         <label>Mobile No:</label>
-        <input type="text" id="mobile" name="mobile" value="{{ mobile }}" placeholder="03XXXXXXXXX" maxlength="11">
+        <input type="text" id="mobile" name="mobile" value="{{ mobile}}" placeholder="03XXXXXXXXX" maxlength="11">
         <div id="mobile-error" class="error-message"></div>
 
         <label>CNIC:</label>
-        <input type="text" id="cnic" name="cnic" value="{{ cnic }}" placeholder="0000000000000" maxlength="13">
+        <input type="text" id="cnic" name="cnic" value="{{ cnic}}" placeholder="0000000000000" maxlength="13">
         <div id="cnic-error" class="error-message"></div>
 
         <label>Email:</label>
         <input type="email" id="email" name="email" value="{{ user.email }}" required placeholder="abc@example.com">
         <div id="email-error" class="error-message"></div>
 
-        <label>New Password (Optional):</label>
-        <div style="position: relative;">
-            <input type="password" id="password" name="password" placeholder="Enter new password" style="width: 90%; padding-right: 40px;">
-            <input type="checkbox" onclick="togglePassword('password')" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">
+        <div style="position: relative; margin-top: 10px;">
+            <label for="password">New Password (Optional):</label>
+            <input type="password" id="password" name="password"
+                placeholder="Enter new password"
+                style="width: 91%; padding-right: 40px;">
+            <input type="checkbox" onclick="togglePassword('password')"
+                style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
         </div>
         <div id="password-error" class="error-message"></div>
 
-        <label>Confirm Password:</label>
-        <div style="position: relative;">
-            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password" style="width: 90%; padding-right: 40px;">
-            <input type="checkbox" onclick="togglePassword('confirm_password')" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%);">
+        <div style="position: relative; margin-top: 10px;">
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password"
+                placeholder="Confirm new password"
+                style="width: 91%; padding-right: 40px;">
+            <input type="checkbox" onclick="togglePassword('confirm_password')"
+                style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
         </div>
         <div id="confirm-password-error" class="error-message"></div>
 
@@ -60,58 +72,89 @@
         <p>Back to <a href="{% url 'adminpanel' %}" class="back-link">Admin Panel</a></p>
     </form>
 </div>
+</body>
 
 <script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    field.type = field.type === "password" ? "text" : "password";
-}
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        field.type = field.type === "password" ? "text" : "password";
+    }
 
-// Validation
-const form = document.getElementById('adminProfileForm');
-const mobileInput = document.getElementById('mobile');
-const cnicInput = document.getElementById('cnic');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const confirmPasswordInput = document.getElementById('confirm_password');
+    const form = document.querySelector('form');
+    const mobileInput = document.getElementById('mobile');
+    const cnicInput = document.getElementById('cnic');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
 
-const mobileError = document.getElementById('mobile-error');
-const cnicError = document.getElementById('cnic-error');
-const emailError = document.getElementById('email-error');
-const confirmPasswordError = document.getElementById('confirm-password-error');
+    const mobileError = document.getElementById('mobile-error');
+    const cnicError = document.getElementById('cnic-error');
+    const emailError = document.getElementById('email-error');
+    const passwordError = document.getElementById('password-error');
+    const confirmPasswordError = document.getElementById('confirm-password-error');
 
-function validateInput() {
-    let valid = true;
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
 
-    const mobileRegex = /^03\d{9}$/;
-    mobileError.textContent = mobileInput.value && !mobileRegex.test(mobileInput.value) ? 
-        "Please enter a valid 11-digit mobile number (03XXXXXXXXX)." : "";
-    if (mobileError.textContent) valid = false;
+        const mobileRegex = /^03\d{9}$/;
+        if (mobileInput.value && !mobileRegex.test(mobileInput.value)) {
+            mobileError.textContent = "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX).";
+            isValid = false;
+        } else {
+            mobileError.textContent = "";
+        }
 
-    const cnicRegex = /^\d{13}$/;
-    cnicError.textContent = cnicInput.value && !cnicRegex.test(cnicInput.value) ? 
-        "Please enter a valid 13-digit CNIC without dashes." : "";
-    if (cnicError.textContent) valid = false;
+        const cnicRegex = /^\d{13}$/;
+        if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
+            cnicError.textContent = "Please enter a valid 13-digit CNIC number without dashes.";
+            isValid = false;
+        } else {
+            cnicError.textContent = "";
+        }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    emailError.textContent = !emailRegex.test(emailInput.value) ? 
-        "Please enter a valid email address." : "";
-    if (emailError.textContent) valid = false;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+            emailError.textContent = "Please enter a valid email address (e.g., abc@example.com).";
+            isValid = false;
+        } else {
+            emailError.textContent = "";
+        }
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordError.textContent = "Passwords do not match.";
+            isValid = false;
+        } else {
+            confirmPasswordError.textContent = "";
+        }
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
 
-    confirmPasswordError.textContent = passwordInput.value !== confirmPasswordInput.value ? 
-        "Passwords do not match." : "";
-    if (confirmPasswordError.textContent) valid = false;
+    mobileInput.addEventListener('blur', function() {
+        const mobileRegex = /^03\d{9}$/;
+        if (mobileInput.value && !mobileRegex.test(mobileInput.value)) {
+            mobileError.textContent = "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX).";
+        } else {
+            mobileError.textContent = "";
+        }
+    });
 
-    return valid;
-}
+    cnicInput.addEventListener('blur', function() {
+        const cnicRegex = /^\d{13}$/;
+        if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
+            cnicError.textContent = "Please enter a valid 13-digit CNIC number without dashes.";
+        } else {
+            cnicError.textContent = "";
+        }
+    });
 
-form.addEventListener('submit', function(e) {
-    if (!validateInput()) e.preventDefault();
-});
-
-[mobileInput, cnicInput, emailInput, passwordInput, confirmPasswordInput].forEach(input => {
-    input.addEventListener('blur', validateInput);
-});
+    emailInput.addEventListener('blur', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+            emailError.textContent = "Please enter a valid email address (e.g., abc@example.com).";
+        } else {
+            emailError.textContent = "";
+        }
+    });
 </script>
-</body>
 </html>

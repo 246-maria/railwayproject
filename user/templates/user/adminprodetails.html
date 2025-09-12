@@ -58,39 +58,39 @@
             margin-top: 90px;
             padding: 30px;
         }
-.profile-card {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    width: 100%;
-    text-align: left;
-    margin-bottom: 20px;
-    margin-left: 250px;
-}
+        .profile-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 20px;
+            margin-left: 250px;
+        }
 
-.profile-card h2 {
-    text-align: center;
-    color: darkgreen;
-    margin-bottom: 25px;
-    font-size: 28px;
-}
+        .profile-card h2 {
+            text-align: center;
+            color: darkgreen;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
 
-.profile-detail {
-    font-size: 18px;
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-left: 4px solid darkgreen;
-    border-radius: 4px;
-}
+        .profile-detail {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid darkgreen;
+            border-radius: 4px;
+        }
 
-.profile-detail .label {
-    font-weight: bold;
-    color: #555;
-    margin-right: 10px;
-}
+        .profile-detail .label {
+            font-weight: bold;
+            color: #555;
+            margin-right: 10px;
+        }
 
         .button-group {
             display: flex;
@@ -177,7 +177,6 @@
 </head>
 <body>
 
-    <!-- Navbar -->
     <nav class="nav-bar">
         <div class="logo">
             <img src="{% static 'images/logo.jpg' %}" alt="Logo" 
@@ -189,26 +188,23 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="profile-card">
             <h2>Admin Profile Details</h2>
             <div class="profile-detail"><span class="label">Full Name:</span> {{ user.full_name }}</div>
             <div class="profile-detail"><span class="label">Email:</span> {{user.email }}</div>
             <div class="profile-detail"><span class="label">Mobile No:</span> {{user.mobile }}</div>
-            <div class="profile-detail"><span class="label">Admin Role:</span> {{user.is_staff }}</div>
+            <div class="profile-detail"><span class="label">Admin Role:</span> {% if user.is_staff %}Yes{% else %}No{% endif %}</div>
              <div class="profile-detail"><span class="label">Joining Date</span>{{user.date_joined}}</div>
             <div class="profile-detail"><span class="label">Last Login:</span> {{ user.last_login }}</div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="button-group">
             <button id="logoutButton" class="confirm-btn">Logout</button>
             <button id="editProfile" onclick="editProfile()">Edit Profile</button>
         </div>
     </div>
     
-    <!-- Custom Modal Structure -->
     <div id="logoutModal" class="modal-overlay">
         <div class="modal-box">
             <p class="modal-message">Are you sure you want to logout from your account?</p>
@@ -224,15 +220,17 @@
         const logoutButton = document.getElementById('logoutButton');
         const logoutModal = document.getElementById('logoutModal');
         const cancelButton = document.getElementById('cancelButton');
+        
         logoutButton.addEventListener('click', function() {
             logoutModal.style.display = 'flex';
         });
+        
         cancelButton.addEventListener('click', function() {
             logoutModal.style.display = 'none';
         });
 
         function editProfile() {
-            window.location.href = "{% url 'admin_edit_profile' %}";
+            window.location.href = "{% url 'admin_edit_profile' user_id=user.id %}";
         }
     </script>
 </body>

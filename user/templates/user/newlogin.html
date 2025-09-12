@@ -18,31 +18,27 @@
         </h2>
         <hr>
 
-        <form method="POST">
+        <form method="POST" action="{% url 'newlogin' %}">
             {% csrf_token %}
             {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li style="color:red; font-weight: bold; text-align: center;">
-                            {{ message }}
-                        </li>
-                    {% endfor %}
-                </ul>
+            <ul class="messages">
+                {% for message in messages %}
+                <li style="color:red; font-weight: bold; text-align: center;">
+                    {{ message }}
+                </li>
+                {% endfor %}
+            </ul>
             {% endif %}
 
             <label for="email">Email Address:</label>
             <input type="text" id="email" name="email" placeholder="Enter your email" required>
+            <span id="email-error" class="error-message"></span>
 
             <div style="position: relative; margin-top: 10px;">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password"
-                    placeholder="Enter your password"
-                    style="width: 91%; padding-right: 40px;">
-                <input type="checkbox" onclick="togglePassword()"
-                    style="position: absolute; left: 190px; top: 50%; transform: translateY(-50%);">
-                <span style="position: absolute; left: 210px; top: 65%; transform: translateY(-50%); font-size: 12px;">
-                   
-                </span>
+                <input type="password" id="password" name="password" placeholder="Enter your password" style="width: 91%; padding-right: 40px;">
+                <input type="checkbox" onclick="togglePassword()" style="position: absolute; left: 190px; top: 50%; transform: translateY(-50%);">
+                <span id="password-error" class="error-message"></span>
             </div>
 
             <button type="submit">Login</button>

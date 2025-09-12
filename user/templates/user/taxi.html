@@ -192,12 +192,12 @@
         <form action="{% url 'confirm_booking' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="user_name">Your Name:</label>
-                <input type="text" id="user_name" name="user_name" required>
+                <label for="user_fullname">Your Name:</label>
+                <input type="text" id="user_fullname" name="user_fullname" value="{{user.user_fullname}}" required>
             </div>
             <div class="form-group">
-                <label for="user_contact">Phone Number:</label>
-                <input type="text" id="user_contact" name="user_contact" required>
+                <label for="user_mobile">Phone Number:</label>
+                <input type="text" id="user_mobile" name="user_mobile" value="{{user.user_mobile}}" required>
             </div>
             <input type="hidden" id="selected_taxi_id" name="selected_taxi_id">
             <input type="hidden" id="booking_from_location" name="booking_from_location">

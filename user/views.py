@@ -25,11 +25,11 @@ from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.core.mail import EmailMessage
 from .forms import FAQForm, PassengerForm, AdminProfileForm
-from django.contrib.auth.models import User  
-from .models import Passenger, FAQ 
+from django.contrib.auth.models import User
+from .models import Passenger, FAQ
 from django.db.models import Q
 from decimal import Decimal
-import uuid
+import uuid, pytz
 from .models import (Train, FAQ, Notification, Feedback,
     Passenger, Hotel, Taxi, Booking, Ticket, HotelBooking, Payment, TaxiBooking
 )
@@ -52,13 +52,13 @@ def registration(request):
         if Passenger.objects.filter(email=email).exists():
             messages.error(request, "Email already exists.")
             return redirect('registration')
-            
+
         if email != confirm_email:
             messages.error(request, "Emails do not match.")
             return redirect('registration')
 
         otp_code = str(random.randint(100000, 999999))
-        
+
         request.session['registration_data'] = {
             'full_name': full_name,
             'mobile': mobile,
@@ -67,7 +67,7 @@ def registration(request):
             'password': password,
             'otp': otp_code
         }
-        
+
         subject = 'OTP for Railway Reservation Registration'
         message = f'Your OTP For Registration is : {otp_code}'
         from_email = settings.EMAIL_HOST_USER
@@ -85,14 +85,14 @@ def registration(request):
 
 def verify_otp(request):
     session_data = request.session.get('registration_data')
-    
+
     if not session_data:
         messages.error(request, "Please fill the Registration Form first.")
         return redirect('registration')
 
     if request.method == "POST":
         user_otp = request.POST.get("otp")
-        
+
         if user_otp == session_data.get('otp'):
             user = Passenger.objects.create_user(
                 email=session_data['email'],
@@ -109,12 +109,12 @@ def verify_otp(request):
             )
 
             request.session.pop('registration_data', None)
-            
+
             messages.success(request, "Registration successfully completed. Now you can log in.")
             return redirect('profile')
         else:
             messages.error(request, "Your OTP does not match. Please enter the correct 6-digit code.")
-            
+
     return render(request, 'user/verify_otp.html')
 @never_cache
 def newlogin(request):
@@ -132,9 +132,9 @@ def newlogin(request):
             Notification.objects.create(
                 user=user,
                 message=f"Welcome back, {user.full_name}!",
-                is_read=False 
+                is_read=False
             )
-            
+
             if user.is_staff:
                 return redirect('adminpanel')
             else:
@@ -162,12 +162,11 @@ def delete_account(request):
         else:
             messages.error(request, "Incorrect password. Account deletion failed.")
             return redirect(reverse('prodetails'))
-    
+
     return render(request, 'user/prodetails.html')
 
 
 # ---------------------- STATIC ADMIN PAGES jo rakhny hn un k lia----------------------
-def adminpanel(request): return render(request, 'user/adminpanel.html')
 def index(request): return render(request, 'user/index.html')
 def book(request): return render(request, 'user/book.html')
 def bookingdet(request): return render(request, 'user/bookingdet.html')
@@ -303,7 +302,7 @@ def add_train(request):
             departure_time=departure_time,
             arrival_time=arrival_time,
             total_seats=total_seats,
-            seats_available=total_seats, 
+            seats_available=total_seats,
             Fare=fare
         )
 
@@ -312,7 +311,10 @@ def add_train(request):
     trains = Train.objects.all()
     context = {'trains': trains}
     return render(request, 'user/trainmanagement.html', context)
-
+@staff_member_required
+def adminpanel(request):
+    context = {'user': request.user}
+    return render(request, 'user/adminpanel.html', context)
 def update_train(request):
     if request.method == 'POST':
         train_number = request.POST.get('train_number', '').strip()
@@ -394,11 +396,11 @@ def add_fare(request):
 
     trains = Train.objects.all()
     return render(request, "user/faremanagement.html", {"trains": trains, "message": message})
-           
+
 
 def update_fare(request):
     if request.method == "POST":
-        train_number = request.POST.get('train') 
+        train_number = request.POST.get('train')
         train = get_object_or_404(Train, train_number=train_number)
         train.Fare = request.POST.get('fare') or None
         train.economy_fare = request.POST.get('economy_fare') or None
@@ -406,7 +408,7 @@ def update_fare(request):
         train.ac_standard_fare = request.POST.get('ac_standard_fare') or None
         train.ac_sleeper_fare = request.POST.get('ac_sleeper_fare') or None
         train.save()
-        return redirect('faremanagement') 
+        return redirect('faremanagement')
 
     return render(request, 'user/faremanagement.html')
 @never_cache
@@ -414,15 +416,15 @@ def profile(request):
     if request.user.is_authenticated:
         user = request.user
         context = {"user": user}
-        return render(request, "user/profile.html", context)  
+        return render(request, "user/profile.html", context)
     else:
         return redirect("newlogin")
-@never_cache    
+@never_cache
 def prodetails(request):
     if request.user.is_authenticated:
         user = request.user
         context = {"user": user}
-        return render(request, "user/prodetails.html", context)  
+        return render(request, "user/prodetails.html", context)
     else:
         return redirect("profile")
 
@@ -495,7 +497,7 @@ def managenotifications(request):
 
 def addnotification(request):
     if request.method == "POST":
-        title = request.POST.get("title")    
+        title = request.POST.get("title")
         message = request.POST.get("message")
         Notification.objects.create(title=title, message=message)
         return redirect('managenotifications')
@@ -533,42 +535,42 @@ def submit_feedback(request):
 def admin_feedback_panel(request):
     all_feedback = Feedback.objects.all().order_by('-submitted_at')
     return render(request, 'user/feedbackmanagement.html', {'feedbacks': all_feedback})
- 
+
 @never_cache
 @login_required
 def update_profile(request):
     user_instance = request.user
     form = PassengerForm(request.POST or None, instance=user_instance)
-    
+
     if request.method == 'POST':
         if form.is_valid():
             user = form.save(commit=False)
-            
+
             new_password = request.POST.get('password')
             confirm_password = request.POST.get('confirmPassword')
             if new_password:
                 if new_password != confirm_password:
                     messages.error(request, 'Passwords do not match.')
                     return render(request, 'user/prodetails.html', {'form': form, 'user': user_instance})
-                
+
                 user.set_password(new_password)
 
             user.save()
             user.mobile = form.cleaned_data.get('mobile', user.mobile)
             user.cnic = form.cleaned_data.get('cnic', user.cnic)
-            user.save(update_fields=['mobile', 'cnic']) 
+            user.save(update_fields=['mobile', 'cnic'])
 
             if new_password:
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Profile and password have been successfully updated!')
             else:
                 messages.success(request, 'Profile details have been successfully updated!')
-            
+
             return redirect('prodetails')
 
         else:
             messages.error(request, 'Please correct the errors below.')
-            
+
     context = {
         'form': form,
         'user': user_instance,
@@ -583,7 +585,6 @@ def prodetails(request):
 
 @login_required
 def adminprodetails(request):
-    # Sirf superuser ko access do
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('index')
@@ -603,47 +604,37 @@ def adminlogout(request):
     logout(request)
     return redirect('home')
 
-@login_required
-def update_admin_profile(request):
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('index')
-
-    admin_user = request.user
+@staff_member_required
+def admin_edit_profile(request, user_id):
+    try:
+        user_to_edit = Passenger.objects.get(id=user_id)
+    except Passenger.DoesNotExist:
+        messages.error(request, 'User does not exist.')
+        return redirect('adminpanel')
 
     if request.method == 'POST':
-        full_name = request.POST.get('full_name')
-        mobile = request.POST.get('mobile')
-        cnic = request.POST.get('cnic')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        form = AdminProfileForm(request.POST, instance=user_to_edit)
+        if form.is_valid():
+            # Form ko save karein, yeh forms.py mein custom save method chalayega
+            user = form.save()
 
-        # Password match check
-        if password and password != confirm_password:
-            messages.error(request, 'Passwords do not match.')
-            return redirect('update_admin_profile')
+            # Agar password change hua hai, to session ko update karein
+            if form.cleaned_data.get('password'):
+                update_session_auth_hash(request, user)
 
-        # Update fields
-        admin_user.full_name = full_name
-        admin_user.email = email
-        admin_user.mobile = mobile
-        admin_user.cnic = cnic
-
-        if password:
-            admin_user.set_password(password)
-
-        admin_user.save()
-        update_session_auth_hash(request, admin_user)
-        messages.success(request, 'Your profile has been successfully updated.')
-        return redirect('adminprodetails')
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('adminprodetails')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = AdminProfileForm(instance=user_to_edit)
 
     context = {
-        'user': admin_user,
-        'mobile': admin_user.mobile,
-        'cnic': admin_user.cnic,
+        'form': form,
+        'user_to_edit': user_to_edit
     }
-    return render(request, 'updateprofile.html', context)
+    return render(request, 'user/updateprofile.html', context)
+
 
 
 def manage_services(request):
@@ -666,7 +657,7 @@ def taxi_management(request):
                     availability=request.POST.get('availability') == 'True',
                     from_location=request.POST.get('from_location'),
                     to_location=request.POST.get('to_location'),
-                    city=request.POST.get('city'), 
+                    city=request.POST.get('city'),
                     travel_date=request.POST.get('travel_date'),
                     travel_time=request.POST.get('travel_time'),
                     fare=request.POST.get('fare'),
@@ -675,7 +666,7 @@ def taxi_management(request):
                 messages.success(request, f"Taxi '{request.POST.get('taxi_number')}' added successfully.")
             except Exception as e:
                 messages.error(request, f"Error adding taxi: {e}")
-        
+
         elif action == 'update' and taxi_id:
             try:
                 taxi = get_object_or_404(Taxi, pk=taxi_id)
@@ -684,9 +675,9 @@ def taxi_management(request):
                 taxi.taxi_number = request.POST.get('taxi_number')
                 taxi.taxi_name=request.POST.get('taxi_name')
                 taxi.availability = request.POST.get('availability') == 'True'
-                taxi.from_location = request.POST.get('from_location') 
-                taxi.to_location = request.POST.get('to_location') 
-                taxi.city = request.POST.get('city') 
+                taxi.from_location = request.POST.get('from_location')
+                taxi.to_location = request.POST.get('to_location')
+                taxi.city = request.POST.get('city')
                 taxi.travel_date = request.POST.get('travel_date')
                 taxi.travel_time = request.POST.get('travel_time')
                 taxi.fare = request.POST.get('fare')
@@ -704,7 +695,7 @@ def taxi_management(request):
                 messages.success(request, f"Taxi '{taxi_number}' deleted successfully.")
             except Exception as e:
                 messages.error(request, f"Error deleting taxi: {e}")
-        
+
         return redirect('taxi_management')
 
     taxis = Taxi.objects.all()
@@ -721,7 +712,7 @@ def hotel_management(request):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-        
+
         if action == 'add':
             hotel_name = request.POST.get('hotel_name')
             contact_number = request.POST.get('contact_number')
@@ -743,7 +734,7 @@ def hotel_management(request):
             )
             messages.success(request, 'Hotel added successfully.')
             return redirect('hotel_management')
-        
+
         elif action == 'update':
             hotel_id = request.POST.get('hotel_id')
             hotel = get_object_or_404(Hotel, pk=hotel_id)
@@ -756,11 +747,11 @@ def hotel_management(request):
             hotel.total_rooms = request.POST.get('total_rooms')
             hotel.facilities = request.POST.get('facilities')
             hotel.booking_date = request.POST.get('booking_date')
-            
+
             hotel.save()
             messages.success(request, 'Hotel updated successfully.')
             return redirect('hotel_management')
-        
+
         elif action == 'delete':
             hotel_id = request.POST.get('hotel_id')
             hotel = get_object_or_404(Hotel, pk=hotel_id)
@@ -778,7 +769,7 @@ def search_train(request):
     trains = []
     selected_class = None
     passengers = 1
-    
+
     current_datetime = timezone.now()
 
     if request.method == "POST":
@@ -787,7 +778,7 @@ def search_train(request):
         selected_class = request.POST.get("class")
         passengers = int(request.POST.get("no_of_passengers"))
         travel_date_str = request.POST.get("travel_date")
-        
+
         travel_date = datetime.strptime(travel_date_str, '%Y-%m-%d').date()
 
         trains_queryset = Train.objects.filter(
@@ -800,7 +791,7 @@ def search_train(request):
             trains_queryset = trains_queryset.filter(
                 departure_time__gte=fortyEight_hours_from_now.time()
             )
-        
+
         trains = list(trains_queryset)
 
         for train in trains:
@@ -813,7 +804,7 @@ def search_train(request):
             else:
                 base_fare = train.ac_standard_fare or 0
             train.total_fare = base_fare * passengers
-            
+
         return render(request, "user/searchandbook.html", {
             "trains": trains,
             "selected_class": selected_class,
@@ -822,7 +813,7 @@ def search_train(request):
             "to_station": to_station,
             "travel_date": travel_date_str,
         })
-    
+
     return render(request, "user/searchandbook.html", {
         "trains": trains,
         "selected_class": selected_class,
@@ -833,42 +824,54 @@ def search_train_public(request):
     trains = []
     selected_class = None
     passengers = 1
-    
+    error_message = None
+
     current_datetime = timezone.now()
 
     if request.method == "POST":
         from_station = request.POST.get("from_station")
         to_station = request.POST.get("to_station")
         selected_class = request.POST.get("class")
-        passengers = int(request.POST.get("no_of_passengers"))
+        passengers_str = request.POST.get("no_of_passengers")
         travel_date_str = request.POST.get("travel_date")
-        
-        travel_date = datetime.strptime(travel_date_str, '%Y-%m-%d').date()
+        try:
+            passengers = int(passengers_str)
+            if not 1 <= passengers <= 10:
+                error_message = "Number of passengers must be between 1 and 10."
+                passengers = 1
+        except (ValueError, TypeError):
+            error_message = "Invalid number of passengers."
+            passengers = 1
+        if not travel_date_str:
+            error_message = "Please select a travel date."
 
-        trains_queryset = Train.objects.filter(
-            from_station__iexact=from_station,
-            to_station__iexact=to_station,
-            travel_date=travel_date
-        )
-
-        if travel_date == current_datetime.date():
-            one_hour_from_now = current_datetime + timedelta(hours=1)
-            trains_queryset = trains_queryset.filter(
-                departure_time__gte=one_hour_from_now.time()
+        else:
+            travel_date = datetime.strptime(travel_date_str, '%Y-%m-%d').date()
+            trains_queryset = Train.objects.filter(
+                from_station__iexact=from_station,
+                to_station__iexact=to_station,
+                travel_date=travel_date
             )
-        
-        trains = list(trains_queryset)
 
-        for train in trains:
-            if selected_class == "Economy":
-                base_fare = train.economy_fare or 0
-            elif selected_class == "Business":
-                base_fare = train.business_fare or 0
-            elif selected_class == "AC_Sleeper":
-                base_fare = train.ac_sleeper_fare or 0
-            else:
-                base_fare = train.ac_standard_fare or 0
-            train.total_fare = base_fare * passengers
+            if travel_date == current_datetime.date():
+                one_hour_from_now = current_datetime + timedelta(hours=1)
+                trains_queryset = trains_queryset.filter(
+                    departure_time__gte=one_hour_from_now.time()
+                )
+
+            trains = list(trains_queryset)
+
+            for train in trains:
+                if selected_class == "Economy":
+                    base_fare = train.economy_fare or 0
+                elif selected_class == "Business":
+                    base_fare = train.business_fare or 0
+                elif selected_class == "AC_Sleeper":
+                    base_fare = train.ac_sleeper_fare or 0
+                else:
+                    base_fare = train.ac_standard_fare or 0
+                train.per_passenger_fare = base_fare
+                train.total_fare = base_fare * passengers
 
         return render(request, "user/search.html", {
             "trains": trains,
@@ -877,13 +880,15 @@ def search_train_public(request):
             "from_station": from_station,
             "to_station": to_station,
             "travel_date": travel_date_str,
+            "error_message": error_message,
         })
-    
+
     return render(request, "user/search.html", {
         "trains": [],
         "selected_class": selected_class,
-        "passengers": passengers
-    })   
+        "passengers": passengers,
+        "error_message": error_message,
+    })
 
 @login_required
 def book_ticket(request, train_id):
@@ -914,7 +919,7 @@ def book_ticket(request, train_id):
                     total_fare=total_fare,
                     status="pending"
                 )
-                
+
                 payment = Payment.objects.create(
                     user=user,
                     booking=booking,
@@ -932,7 +937,7 @@ def book_ticket(request, train_id):
                 )
 
             messages.success(request, "Booking request submitted successfully! Please wait for admin approval.")
-            
+
             return redirect("loading_page", booking_id=booking.id)
 
         except Exception as e:
@@ -972,17 +977,17 @@ def ticket(request, booking_id):
             'booking': booking,
             'ticket': ticket_obj
         }
-        
+
         return render(request, 'user/ticket.html', context)
-    
+
     except Booking.DoesNotExist:
         messages.error(request, "Booking not found or does not belong to you.")
-        return redirect('bookinghistory') 
+        return redirect('bookinghistory')
     except Ticket.DoesNotExist:
         messages.error(request, "No ticket found for this booking.")
         return redirect('bookinghistory')
-    
-@never_cache    
+
+@never_cache
 @login_required
 def cancel_ticket(request):
     booking_id = None
@@ -1006,7 +1011,7 @@ def cancel_ticket(request):
         departure_time = datetime.combine(booking.train.travel_date, booking.train.departure_time)
         current_time = timezone.now()
         time_difference = departure_time.replace(tzinfo=None) - current_time.replace(tzinfo=None)
-        
+
         if time_difference >= timedelta(hours=48):
             refund_percentage = Decimal('0.95')
         elif time_difference >= timedelta(hours=24):
@@ -1018,11 +1023,11 @@ def cancel_ticket(request):
 
         total_fare = booking.total_fare
         refund_amount = total_fare * refund_percentage
-        
+
         if refund_amount > 0:
             booking.status = 'refund_pending'
             Notification.objects.create(
-                user=request.user, 
+                user=request.user,
                 message=f"Your ticket for Booking ID {booking.id} has been cancelled. A refund of PKR {refund_amount} is now pending which is proceed within 3-4 days. Please also Cancel the Taxi and Hotel Booking if you avail any."
             )
             messages.success(request, f"Ticket for Booking ID {booking.id} has been cancelled successfully. Refund of PKR {refund_amount} is now pending for processing.")
@@ -1030,14 +1035,14 @@ def cancel_ticket(request):
             booking.status = 'cancelled'
             messages.info(request, "Ticket has been cancelled, but no refund is due as per cancellation policy.")
             Notification.objects.create(
-                user=request.user, 
+                user=request.user,
                 message=f"Your ticket for Booking ID {booking.id} has been cancelled. No refund is due. Please Also cancel the Taxi and Hotel services if you avail any."
             )
 
         booking.refund_amount = refund_amount
         booking.cancellation_date = timezone.now()
         booking.save()
-        
+
         subject = f"Ticket Cancellation Alert: Booking ID {booking.id}"
         message_body = (
             f"A ticket has been cancelled by {request.user.full_name}.\n\n"
@@ -1058,14 +1063,14 @@ def cancel_ticket(request):
             fail_silently=False,
         )
         messages.success(request, f"Cancellation email sent to admin for Booking ID {booking.id}.")
-        
+
     except Booking.DoesNotExist:
         messages.error(request, f"Booking ID {booking_id} not found or does not belong to your account.")
     except Ticket.DoesNotExist:
          messages.error(request, f"Ticket for Booking ID {booking_id} not found.")
     except Exception as e:
         messages.error(request, f"An error occurred during cancellation: {e}")
-    
+
     return redirect('cancel_by_id_view')
 
 @require_POST
@@ -1078,7 +1083,7 @@ def process_refund(request, booking_id):
                 booking.status = 'refund'
                 booking.save()
                 Notification.objects.create(
-                    user=booking.user, 
+                    user=booking.user,
                     message=f"Your refund for Booking ID {booking.id} has been successfully processed. The amount of PKR {booking.refund_amount} has been issued."
                 )
 
@@ -1096,7 +1101,7 @@ def process_refund(request, booking_id):
 def paymentmanagement(request):
     pending_payments = Payment.objects.filter(status='pending').order_by('-id')
     refund_eligible_bookings = Booking.objects.filter(status='refund_pending').order_by('-id')
-    
+
     context = {
         'pending_payments': pending_payments,
         'refund_eligible_bookings': refund_eligible_bookings,
@@ -1113,7 +1118,7 @@ def ticketmanagement(request):
     cancelled_taxi_bookings = TaxiBooking.objects.filter(status='Cancelled')
     approved_hotel_bookings = HotelBooking.objects.filter(status='Booked')
     cancelled_hotel_bookings = HotelBooking.objects.filter(status='Cancelled')
-    
+
     context = {
         'approved_train_bookings': approved_train_bookings,
         'rejected_train_bookings': rejected_train_bookings,
@@ -1141,10 +1146,10 @@ def approve_or_reject_booking(request, booking_id, action):
                 payment = get_object_or_404(Payment, booking=booking)
                 payment.status = 'approved'
                 payment.save()
-                
+
                 booking.status = 'approved'
                 booking.save()
-                
+
                 try:
                     ticket = Ticket.objects.get(booking=booking)
                     ticket.status = 'approved'
@@ -1160,7 +1165,7 @@ def approve_or_reject_booking(request, booking_id, action):
                         price=booking.total_fare,
                         seat_number=booking.seat_number
                     )
-                
+
                 Notification.objects.create(
                     user=booking.user,
                     message=f"Your Booking ID:{booking.id} is approved by the admin. Please Check the booking details. Now you can also avail Taxi and Hotel Booking if you like."
@@ -1176,14 +1181,14 @@ def approve_or_reject_booking(request, booking_id, action):
             if booking.status == 'pending':
                 booking.status = 'rejected'
                 booking.save()
-                
+
                 try:
                     payment = get_object_or_404(Payment, booking=booking)
                     payment.status = 'rejected'
                     payment.save()
                 except Payment.DoesNotExist:
                     pass
-                
+
                 Notification.objects.create(
                     user=booking.user,
                     message=f"Your Payment is rejected by the admin.For more Details please contact the admin."
@@ -1198,7 +1203,7 @@ def approve_or_reject_booking(request, booking_id, action):
     except Exception as e:
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('paymentmanagement')
-    
+
     return redirect('paymentmanagement')
 
 
@@ -1214,7 +1219,7 @@ def refund_page(request, booking_id, refund_amount):
             Payment.objects.create(
                 user=booking.user,
                 booking=booking,
-                amount=-refund_amount, 
+                amount=-refund_amount,
                 payment_date=timezone.now(),
                 status='refund'
             )
@@ -1222,7 +1227,7 @@ def refund_page(request, booking_id, refund_amount):
             message = f"Aapki booking (ID: {booking.id}) ka refund process ho gaya hai. Aapko {refund_amount} PKR wapis kar diye gaye hain."
             Notification.objects.create(user=booking.user, message=message)
 
-        
+
         messages.success(request, f"Refund of PKR {refund_amount} processed for Booking ID {booking_id}. User has been notified.")
         return redirect('ticketmanagement')
 
@@ -1234,15 +1239,28 @@ def refund_page(request, booking_id, refund_amount):
         return redirect('paymentmanagement')
 
 
+
 @login_required
 def train_history(request):
-    train_bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
+    user_bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
+
+    current_time = timezone.now()
+
+    for booking in user_bookings:
+        if booking.status == 'approved':
+            travel_datetime = datetime.combine(booking.train.travel_date, booking.train.departure_time)
+
+            travel_datetime = timezone.make_aware(travel_datetime, timezone=pytz.timezone('Asia/Karachi'))
+
+            if travel_datetime < current_time:
+                booking.status = 'expired'
+                booking.save()
+    user_bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
 
     context = {
-        'train_bookings': train_bookings
+        'user_bookings': user_bookings,
     }
     return render(request, "user/train_history.html", context)
-
 
 @login_required
 def book_hotel(request):
@@ -1251,7 +1269,7 @@ def book_hotel(request):
         check_in = request.POST.get('check_in')
         check_out = request.POST.get('check_out')
         total_fare = request.POST.get('total_fare')
-        
+
         try:
             hotel = Hotel.objects.get(pk=hotel_id)
             new_booking = HotelBooking.objects.create(
@@ -1260,7 +1278,7 @@ def book_hotel(request):
                 check_in_date=check_in,
                 check_out_date=check_out,
                 total_fare=total_fare,
-                status='approved' 
+                status='approved'
             )
             messages.success(request, f'Hotel booking successful! Your ticket number is {new_booking.ticket_number}')
             return redirect('hotel_history')
@@ -1295,14 +1313,14 @@ def contact_us(request):
                 body=admin_email_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=['railwayreservationsystem591@gmail.com'],
-                reply_to=[user_email]  
+                reply_to=[user_email]
             )
             email.send(fail_silently=False)
             messages.success(request, "Your message has been sent successfully!")
             return redirect('contact_us')
         except Exception as e:
             messages.error(request, "There was an error sending your message. Please try again later.")
-            print(f"Email sending failed: {e}") 
+            print(f"Email sending failed: {e}")
 
     return render(request, 'user/contactus.html')
 
@@ -1318,10 +1336,10 @@ def forgot_password_request(request):
                 'otp': otp_code
             }
             send_mail(
-                'Password Reset OTP',  
-                f'Your  OTP Verification code is: {otp_code}',  
+                'Password Reset OTP',
+                f'Your  OTP Verification code is: {otp_code}',
                 'railwayreservationsystem591@gmail.com',
-                [email], 
+                [email],
                 fail_silently=False,
             )
 
@@ -1341,13 +1359,13 @@ def forgot_password_verify_otp(request):
 
     if request.method == "POST":
         otp_entered = request.POST.get('otp')
-        
+
         if otp_entered == session_data.get('otp'):
             messages.success(request, "OTP verified successfully.")
             return redirect('forgot_password_new_password')
         else:
             messages.error(request, "Invalid OTP.")
-            
+
     return render(request, 'user/password_verify_otp.html')
 
 def forgot_password_new_password(request):
@@ -1361,22 +1379,22 @@ def forgot_password_new_password(request):
     if request.method == "POST":
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
-        
+
         if new_password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return render(request, 'user/password_rest_form.html')
-            
+
         if user.check_password(new_password):
             messages.error(request, "This account has the same password as before. Try something else or log in with the previous password.")
             return render(request, 'user/password_rest_form.html')
-            
+
         user.set_password(new_password)
         user.save()
         request.session.pop('reset_data', None)
 
         messages.success(request, "Your password has been reset successfully. Please log in.")
         return redirect('newlogin')
-    
+
     return render(request, 'user/password_rest_form.html')
 @login_required
 def user_notification(request):
@@ -1396,7 +1414,7 @@ def unread_notifications_count(request):
         Q(user=request.user, is_read=False) | Q(user__isnull=True, is_read=False)
     ).count()
     return JsonResponse({'count': count})
-    
+
 @login_required
 def mark_notification_read(request, notification_id):
     try:
@@ -1439,7 +1457,7 @@ def generate_report(request):
 
             start_datetime = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
             end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
-            
+
         except (ValueError, TypeError):
             messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
             return redirect('generate_report')
@@ -1523,28 +1541,28 @@ def generate_report(request):
 
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="{report_type}_report_{timezone.now().strftime("%Y-%m-%d")}.pdf"'
-            
+
             pisa_status = pisa.CreatePDF(html, dest=response)
             if pisa_status.err:
                 messages.error(request, "PDF generation failed.")
                 return redirect('generate_report')
             return response
-        
+
         elif export_type == 'csv':
             messages.error(request, "CSV export is not yet implemented.")
             return redirect('generate_report')
         else:
             messages.error(request, "Invalid export format selected.")
             return redirect('generate_report')
-    
+
     return render(request, 'user/generatereport.html')
 def taxi_combined_view(request):
     return render(request, "user/taxi.html")
 
-def booking_details_view(request, booking_id): 
+def booking_details_view(request, booking_id):
     try:
         booking = get_object_or_404(TaxiBooking, pk=booking_id)
-        
+
         context = {
             'booking': booking
         }
@@ -1552,29 +1570,18 @@ def booking_details_view(request, booking_id):
     except Exception as e:
         messages.error(request, f"Error: {e}")
         return redirect(reverse('taxi_booking'))
-  
-@login_required
+
 def booking_history(request):
-    user_bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
-
-    booking_data = []
-    for booking in user_bookings:
-        combined_datetime = datetime.combine(booking.train.travel_date, booking.train.departure_time)
-        departure_passed = combined_datetime < timezone.now()
-
-        booking_data.append({
-            'booking': booking,
-            'departure_passed': departure_passed,
-        })
+    user_bookings = Booking.objects.filter(user=request.user)
 
     context = {
-        'booking_data': booking_data,
+        'user_bookings': user_bookings,
     }
-    return render(request, 'train_history.html', context)
+    return render(request, 'user/bookinghistory.html', context)
 
 def booking_details_view(request, booking_id):
-    booking = get_object_or_404(TaxiBooking, pk=booking_id) 
-    
+    booking = get_object_or_404(TaxiBooking, pk=booking_id)
+
     context = {
         'booking': booking,
     }
@@ -1656,18 +1663,18 @@ def book_hotel(request):
 
                 hotel.available_rooms -= 1
                 hotel.save()
-            
+
                 # Add this code to create a notification
                 Notification.objects.create(
-                    user=request.user, 
+                    user=request.user,
                     message=f"Your hotel booking at {hotel.hotel_name} has been successfully completed."
                 )
-            
+
             return JsonResponse({'success': True, 'message': 'Hotel booked successfully!'})
-            
+
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
-            
+
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 def get_hotels_by_location(request):
@@ -1703,17 +1710,17 @@ def cancel_hotel_booking(request):
             with transaction.atomic():
                 booking.status = 'Cancelled'
                 booking.save()
-                
+
                 hotel = booking.hotel
                 if hasattr(hotel, 'available_rooms'):
                     hotel.available_rooms += 1
                     hotel.save()
-            
+
             Notification.objects.create(
-                user=request.user, 
+                user=request.user,
                 message=f"Your Hotel with Booking ID:{booking.id} is successfully cancelled."
             )
-            
+
             return JsonResponse({'success': True, 'message': 'Hotel booking has been successfully cancelled.'})
         else:
             return JsonResponse({'success': False, 'error': 'This hotel booking is already cancelled.'})
@@ -1731,16 +1738,16 @@ def taxi_booking_view(request):
     taxis = None
     search_query = {}
     from_locations = Taxi.objects.values_list('from_location', flat=True).distinct().order_by('from_location')
-    searched = False 
+    searched = False
 
     if request.method == 'GET':
         from_location = request.GET.get('from_location')
         to_location = request.GET.get('to_location')
         travel_datetime_str = request.GET.get('travel_date_time')
-        
+
         if from_location and to_location and travel_datetime_str:
-            searched = True 
-            
+            searched = True
+
             search_query = {
                 'from_location': from_location,
                 'to_location': to_location,
@@ -1757,8 +1764,8 @@ def taxi_booking_view(request):
             except Exception as e:
                 messages.error(request, f"Error searching for taxis: {e}")
                 taxis = []
-                
-           
+
+
     context = {
         'taxis': taxis,
         'search_query': search_query,
@@ -1774,12 +1781,12 @@ def confirm_booking_view(request):
         from_location = request.POST.get('booking_from_location')
         to_location = request.POST.get('booking_to_location')
         travel_date_time_str = request.POST.get('booking_date_time')
-        user_name = request.POST.get('user_name')
-        user_contact = request.POST.get('user_contact')
-        if not all([taxi_id, from_location, to_location, travel_date_time_str, user_name, user_contact]):
+        user_fullname = request.POST.get('user_fullname')
+        user_mobile = request.POST.get('user_mobile')
+        if not all([taxi_id, from_location, to_location, travel_date_time_str, user_fullname, user_mobile]):
             messages.error(request, "All required fields are not provided.")
             return redirect('taxi_booking')
-        
+
         selected_taxi = get_object_or_404(Taxi, pk=taxi_id)
         travel_datetime = datetime.strptime(travel_date_time_str, '%Y-%m-%dT%H:%M')
 
@@ -1787,8 +1794,8 @@ def confirm_booking_view(request):
             new_taxi_booking = TaxiBooking.objects.create(
                 user=request.user,
                 taxi=selected_taxi,
-                user_name=user_name,
-                user_contact=user_contact,
+                user_fullname=user_fullname,
+                user_mobile=user_mobile,
                 pickup_location=from_location,
                 dropoff_location=to_location,
                 travel_datetime=travel_datetime,
@@ -1798,9 +1805,9 @@ def confirm_booking_view(request):
             selected_taxi.availability = False
             selected_taxi.status = 'Booked'
             selected_taxi.save()
-        
+
             Notification.objects.create(
-                user=request.user, 
+                user=request.user,
                 message=f"Your taxi from {from_location} to {to_location} has been successfully booked."
             )
 
@@ -1826,7 +1833,7 @@ def get_to_locations(request):
     return JsonResponse({'to_locations': to_locations})
 
 def booking_details_view(request, booking_id):
-    booking = get_object_or_404(TaxiBooking, pk=booking_id) 
+    booking = get_object_or_404(TaxiBooking, pk=booking_id)
     context = {
         'booking': booking,
         'is_single_booking': True
@@ -1835,7 +1842,7 @@ def booking_details_view(request, booking_id):
 
 @login_required
 def taxi_booking_history(request):
-    taxi_bookings = TaxiBooking.objects.filter(user=request.user).order_by('-id') 
+    taxi_bookings = TaxiBooking.objects.filter(user=request.user).order_by('-id')
     context = {
         'taxi_bookings': taxi_bookings,
         'is_single_booking': False
@@ -1854,16 +1861,16 @@ def cancel_taxi_booking(request, booking_id):
             with transaction.atomic():
                 booking.status = 'Cancelled'
                 booking.save()
-                taxi = booking.taxi 
-                if taxi: 
-                    taxi.availability = True 
-                    taxi.status = 'Available' 
-                    taxi.save()  
-                Notification.objects.create( 
-                    user=request.user,  
+                taxi = booking.taxi
+                if taxi:
+                    taxi.availability = True
+                    taxi.status = 'Available'
+                    taxi.save()
+                Notification.objects.create(
+                    user=request.user,
                     message=f"You Taxi with Booking ID:{booking.id} is Successfully Cancelled."
                 )
-                
+
             return JsonResponse({
                 'success': True,
                 'message': 'Your taxi booking has been successfully cancelled.'
@@ -1886,42 +1893,42 @@ def cancel_taxi_booking(request, booking_id):
             'error': f'An error occurred: {str(e)}'
         }, status=500)
 
-@login_required 
-@require_POST 
-def cancel(request, booking_id): 
-    try: 
-        booking = get_object_or_404(Booking, pk=booking_id, user=request.user) 
+@login_required
+@require_POST
+def cancel(request, booking_id):
+    try:
+        booking = get_object_or_404(Booking, pk=booking_id, user=request.user)
 
-        if booking.status != 'cancelled': 
-            with transaction.atomic(): 
-                booking.status = 'cancelled' 
-                booking.save() 
-                Notification.objects.create( 
-                    user=request.user,  
-                    message=f"Your Booking with ID:{booking.id} is Successfully Cancelled." 
-                ) 
-            
+        if booking.status != 'cancelled':
+            with transaction.atomic():
+                booking.status = 'cancelled'
+                booking.save()
+                Notification.objects.create(
+                    user=request.user,
+                    message=f"Your Booking with ID:{booking.id} is Successfully Cancelled."
+                )
+
             return JsonResponse({
                 'success': True,
                 'message': 'Your Booking has been cancelled.'
             })
-        else: 
+        else:
             return JsonResponse({
                 'success': False,
                 'error': 'This booking is already cancelled.'
             })
 
-    except Booking.DoesNotExist: 
+    except Booking.DoesNotExist:
         return JsonResponse({
             'success': False,
             'error': 'Booking not found.'
         }, status=404)
-    except Exception as e: 
-        logger.exception("Error occurred during train booking cancellation.") 
+    except Exception as e:
+        logger.exception("Error occurred during train booking cancellation.")
         return JsonResponse({
             'success': False,
             'error': f'Error: {str(e)}'
         }, status=500)
-@never_cache    
+@never_cache
 def cancel_by_id_view(request):
     return render(request, 'user/cancel_by_id.html')

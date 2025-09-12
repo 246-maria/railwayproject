@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -127,6 +126,7 @@
         .status-approved { background-color: darkgreen; color: white; }
         .status-cancelled { background-color: #dc3545; color: white; }
         .status-refund { background-color: yellowgreen; color: white; }
+        .status-used { background-color: #343a40; color: white; }
 
         .alert {
             padding: 15px;
@@ -152,8 +152,8 @@
 
         <a href="{% url 'booking_history' %}" class="btn btn-secondary">Back to Booking History</a>
 
-        {% if train_bookings %}
-            {% for booking in train_bookings %}
+        {% if user_bookings %}
+            {% for booking in user_bookings %}
             <div class="card">
                 <div class="card-header">
                     <span>Ticket Number: {{ booking.ticket.ticket_number }}</span>

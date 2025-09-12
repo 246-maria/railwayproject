@@ -249,5 +249,18 @@
             form.reset();
         }
     };
+    const passengerInput = document.getElementById('no_of_passenger');
+
+    passengerInput.addEventListener('input', function() {
+        const min = parseInt(this.min);
+        const max = parseInt(this.max);
+        const value = parseInt(this.value);
+        if (value > max) {
+            this.value = max;
+        } 
+        else if (value < min) {
+            this.value = min;
+        }
+    });
 </script>
 </html>

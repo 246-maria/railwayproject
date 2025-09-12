@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-
 urlpatterns = [
     path('', views.index, name='index'),
     path('registration/', views.registration, name='registration'),
@@ -35,7 +34,7 @@ urlpatterns = [
     path('bookinghistory/', views.bookinghistory, name='bookinghistory'),
     path('train-history/', views.train_history, name='train_history'),
     path('hotel-history/', views.hotel_history, name='hotel_history'),
-    path('ticket/', views.ticket, name='ticket'), 
+    path('ticket/', views.ticket, name='ticket'),
     path('loading_page/<int:booking_id>/', views.loading_page, name='loading_page'),
     path('check_booking_status/<int:booking_id>/', views.check_booking_status, name='check_booking_status'),
     path('ticket/<int:booking_id>/', views.ticket, name='ticket'),
@@ -45,7 +44,8 @@ urlpatterns = [
     #admin profile
     path('adminprodetails/', views.adminprodetails, name='adminprodetails'),
     path('adminlogout/', views.adminlogout, name='adminlogout'),
-    path('update_admin_profile/', views.update_admin_profile, name='update_admin_profile'),
+    path('admin_edit_profile/<int:user_id>/', views.admin_edit_profile, name='admin_edit_profile'),
+
 
     # FAQs
     path('managefaqs/', views.managefaqs, name='managefaqs'),
@@ -56,8 +56,8 @@ urlpatterns = [
     path('faremanagement/', views.faremanagement, name='faremanagement'),
     path('add_fare/', views.add_fare, name='add_fare'),
     path('update_fare/', views.update_fare, name='update_fare'),
-    
-    # feedback 
+
+    # feedback
     path('feedback/submit/', views.submit_feedback, name='submit_feedback'),
     path('submit_feedback/', views.submit_feedback, name ='submit_feedback' ),
     path('feedback/', views.admin_feedback_panel, name='admin_feedback_panel'),
@@ -99,39 +99,39 @@ urlpatterns = [
     # contact us
     path('contact-us/', views.contact_us, name='contact_us'),
     path('user-notifications/', views.user_notification, name='user-notifications'),
-    
+
     # Yeh naye URLs hain
     path('ticketmanagement/', views.ticketmanagement, name='ticketmanagement'),
     path('cancel-ticket/<int:booking_id>/', views.cancel_ticket, name='cancel_ticket'),
     path('refund-page/<int:booking_id>/<int:refund_amount>/', views.refund_page, name='refund_page'),
-    
 
-    #update profile 
+
+    #update profile
     path('update_profile/', views.update_profile, name='update_profile'),
     path('forgot-password-request/', views.forgot_password_request, name='forgot_password_request'),
     path('forgot-password-verify-otp/', views.forgot_password_verify_otp, name='forgot_password_verify_otp'),
     path('forgot-password-new-password/', views.forgot_password_new_password, name='forgot_password_new_password'),
-    
-    
-  
+
+
+
     path('taxi/<int:booking_id>/', views.taxi, name='taxi'),
-    
+
     path('taxi/', views.taxi, name='taxi'),
      path("taxi_combined_view/", views.taxi_combined_view, name="taxi_combined_view"),
       path('taxi-booking/', views.taxi_booking_view, name='taxi_booking'),
-    
+
     # Page to show confirmed booking details
     path('booking-details/<int:booking_id>/', views.booking_details_view, name='booking_details'),
     path('confirm_booking/', views.confirm_booking_view, name='confirm_booking'),
     path('booking_details/<int:booking_id>/', views.booking_details_view, name='booking_details'),
-    
+
     # URL to handle form submission for booking
     path('confirm-booking/', views.confirm_booking_view, name='confirm_booking'),
     path('hotel/', views.hotel, name='hotel'),
     path('taxi-booking/', views.taxi_booking_view, name='taxi_booking'),
     path('confirm-booking/', views.confirm_booking_view, name='confirm_booking'),
     path('booking-details/<int:booking_id>/', views.booking_details_view, name='booking_details'),
-    path('get-to-locations/', views.get_to_locations, name='get_to_locations'), 
+    path('get-to-locations/', views.get_to_locations, name='get_to_locations'),
     path('get-hotels-by-location/', views.get_hotels_by_location, name='get_hotels_by_location'),
     path('hotel-details/', views.hoteldetails, name='hoteldetails'),
     path('taxi-booking/', views.taxi_booking_view, name='taxi_booking'),

@@ -30,7 +30,8 @@ STATUS_CHOICES = [
     ('booked', 'Booked'),
     ('refund_pending', 'Refund Pending'),
     ('refund', 'Refund'),
-    ('available', 'Available')
+    ('available', 'Available'),
+    ('expired', 'Expired')
 ]
 CLASS_CHOICES = [
     ('Economy', 'Economy'),
