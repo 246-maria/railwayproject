@@ -156,7 +156,7 @@
                     if (data.success) {
                         showMessage('success', data.message);
                         setTimeout(() => {
-                            window.location.href = '{% url "hoteldetails" %}';
+                            window.location.href = '{% url "hotel_history" %}';
                         }, 2000);
                     } else {
                         showMessage('danger', 'Error: ' + data.error);

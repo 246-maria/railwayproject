@@ -36,11 +36,9 @@ document.getElementById('hotelBookingForm').addEventListener('submit', function 
 
     localStorage.setItem('hotelBooking', JSON.stringify(bookingData));
 
-    // Show confirmation message
     const messageDiv = document.getElementById('message');
     messageDiv.style.display = 'block';
 
-    // Hide the message and redirect after 3 seconds
     setTimeout(() => {
         messageDiv.style.display = 'none';
         window.location.href = 'hoteldet.html';

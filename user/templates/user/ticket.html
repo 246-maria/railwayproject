@@ -226,6 +226,7 @@
                 <div class="header-right">
                     <p>Railway Reservation System</p>
                     <p>Travel Date: {{ booking.train.travel_date|date:"d M Y" }} {{booking.train.departure_time|time:"h:i A"}}</p>
+                    <p>Departure Time: {{ booking.train.arrival_time|time:"h:i A"}}</p>
                     <p>{{booking.travel_class}}({{booking.train.train_number}})</p>
                     <p>Ticket No: {{ticket.ticket_number}}</p>
                 </div>

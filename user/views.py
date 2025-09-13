@@ -13,6 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 import logging
 import json
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.admin.views.decorators import staff_member_required
@@ -1287,16 +1288,6 @@ def book_hotel(request):
             return redirect('hotel')
     return redirect('hotel')
 
-
-@login_required
-def hotel_history(request):
-
-    hotel_bookings = Hotel.objects.filter(user=request.user).order_by('-booking_date')
-    context = {'hotel_bookings': hotel_bookings}
-    return render(request, 'user/hoteldet.html', context)
-
-
-
 def contact_us(request):
     if request.method == "POST":
         user_name = request.POST.get('name')
@@ -1684,55 +1675,55 @@ def get_hotels_by_location(request):
     return JsonResponse({'hotels': hotel_list})
 
 @login_required
-def hoteldetails(request):
+def hotel_history(request):
     try:
+        now = timezone.now().date()
+        expired_bookings = HotelBooking.objects.filter(
+            user=request.user,
+            check_out_date__lt=now
+        ).exclude(status__in=['Cancelled', 'Expired'])
+        for booking in expired_bookings:
+            booking.status = 'Expired'
+            booking.save()
         hotel_bookings = HotelBooking.objects.filter(user=request.user).order_by('-id')
+
+        for booking in hotel_bookings:
+            if booking.status == 'Cancelled':
+                booking.display_status = 'Cancelled'
+            elif booking.status == 'Expired':
+                booking.display_status = 'Expired'
+            else:
+                booking.display_status = 'Booked'
+
         context = {
             'hotel_bookings': hotel_bookings
         }
         return render(request, 'user/hoteldet.html', context)
+        
     except Exception as e:
         messages.error(request, f"Error fetching hotel bookings: {e}")
         return render(request, 'user/hoteldet.html', {'hotel_bookings': []})
 
+
+@csrf_exempt
 @require_POST
-def cancel_hotel_booking(request):
-    try:
-        data = json.loads(request.body)
-        booking_id = data.get('booking_id')
+def cancel_hotel_booking(request, booking_id):
+    if request.method == 'POST':
+        try:
+            booking = get_object_or_404(HotelBooking, id=booking_id)
+            booking.status = 'cancelled'
+            booking.save()
+            return JsonResponse({'success': True, 'message': 'Reservation cancelled successfully.'})
+        except HotelBooking.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Booking not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
-        if not booking_id:
-            return JsonResponse({'success': False, 'error': 'Booking ID is required.'})
-
-        booking = get_object_or_404(HotelBooking, pk=booking_id, user=request.user)
-
-        if booking.status != 'Cancelled':
-            with transaction.atomic():
-                booking.status = 'Cancelled'
-                booking.save()
-
-                hotel = booking.hotel
-                if hasattr(hotel, 'available_rooms'):
-                    hotel.available_rooms += 1
-                    hotel.save()
-
-            Notification.objects.create(
-                user=request.user,
-                message=f"Your Hotel with Booking ID:{booking.id} is successfully cancelled."
-            )
-
-            return JsonResponse({'success': True, 'message': 'Hotel booking has been successfully cancelled.'})
-        else:
-            return JsonResponse({'success': False, 'error': 'This hotel booking is already cancelled.'})
-
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON format.'})
-    except HotelBooking.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Booking not found or you do not have permission to cancel it.'})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': f'An unexpected error occurred: {str(e)}'})
 
 # ====================================================================================
+
+logger = logging.getLogger(__name__)
 
 def taxi_booking_view(request):
     taxis = None
@@ -1748,23 +1739,32 @@ def taxi_booking_view(request):
         if from_location and to_location and travel_datetime_str:
             searched = True
 
-            search_query = {
-                'from_location': from_location,
-                'to_location': to_location,
-                'travel_date_time': travel_datetime_str,
-            }
-
             try:
+                travel_datetime_obj = datetime.strptime(travel_datetime_str, '%Y-%m-%dT%H:%M')
+                
+                travel_date_obj = travel_datetime_obj.date()
+                travel_time_obj = travel_datetime_obj.time()
+
+                search_query = {
+                    'from_location': from_location,
+                    'to_location': to_location,
+                    'travel_date_time': travel_datetime_str,
+                }
+                
                 taxis = Taxi.objects.filter(
                     Q(from_location__iexact=from_location) &
                     Q(to_location__iexact=to_location) &
+                    Q(travel_date=travel_date_obj) &
+                    Q(travel_time=travel_time_obj) &
                     Q(availability=True) &
                     Q(status='Available')
                 )
+            except ValueError:
+                messages.error(request, 'Please enter a valid date and time.')
+                taxis = []
             except Exception as e:
                 messages.error(request, f"Error searching for taxis: {e}")
                 taxis = []
-
 
     context = {
         'taxis': taxis,
@@ -1773,7 +1773,8 @@ def taxi_booking_view(request):
         'searched': searched,
     }
     return render(request, 'user/taxi.html', context)
-login_required
+    
+@login_required
 @require_POST
 def confirm_booking_view(request):
     try:
@@ -1781,9 +1782,10 @@ def confirm_booking_view(request):
         from_location = request.POST.get('booking_from_location')
         to_location = request.POST.get('booking_to_location')
         travel_date_time_str = request.POST.get('booking_date_time')
-        user_fullname = request.POST.get('user_fullname')
-        user_mobile = request.POST.get('user_mobile')
-        if not all([taxi_id, from_location, to_location, travel_date_time_str, user_fullname, user_mobile]):
+        user_name = request.POST.get('user_name')  
+        user_contact = request.POST.get('user_contact')  
+
+        if not all([taxi_id, from_location, to_location, travel_date_time_str, user_name, user_contact]):
             messages.error(request, "All required fields are not provided.")
             return redirect('taxi_booking')
 
@@ -1794,8 +1796,8 @@ def confirm_booking_view(request):
             new_taxi_booking = TaxiBooking.objects.create(
                 user=request.user,
                 taxi=selected_taxi,
-                user_fullname=user_fullname,
-                user_mobile=user_mobile,
+                user_name=user_name, 
+                user_contact=user_contact, 
                 pickup_location=from_location,
                 dropoff_location=to_location,
                 travel_datetime=travel_datetime,
@@ -1821,7 +1823,6 @@ def confirm_booking_view(request):
         messages.error(request, f'An error occurred: {str(e)}')
         return redirect('taxi_booking')
 
-
 def get_to_locations(request):
     from_location = request.GET.get('from_location')
     to_locations = []
@@ -1843,12 +1844,23 @@ def booking_details_view(request, booking_id):
 @login_required
 def taxi_booking_history(request):
     taxi_bookings = TaxiBooking.objects.filter(user=request.user).order_by('-id')
+    
+    current_time = timezone.now()
+    
+    for booking in taxi_bookings:
+        # Check if the booking's travel time has passed
+        if booking.travel_datetime < current_time and booking.status != 'Cancelled':
+            booking.status = 'Expired'
+            booking.save()
+
+    # Re-fetch the bookings to reflect the updated status
+    taxi_bookings = TaxiBooking.objects.filter(user=request.user).order_by('-id')
+
     context = {
         'taxi_bookings': taxi_bookings,
         'is_single_booking': False
     }
     return render(request, 'user/bookingdet.html', context)
-
 
 @never_cache
 @login_required

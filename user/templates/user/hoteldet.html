@@ -5,102 +5,120 @@
     <meta charset="UTF-8">
     <title>Hotel Booking History</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
-            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+             background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             margin: 0;
             padding: 40px;
         }
-
         .container {
-            margin: 0 auto;
             max-width: 800px;
+            margin: auto;
             background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
         }
-
-        h2 {
-            text-align: center;
-            color: green;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        .header-section {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: bold;
-            border-bottom: 2px solid darkgreen;
-        }
-
-        .card {
+            color: green;
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            border: none;
-            border-radius: 10px;
-            overflow: hidden;
+            border-bottom: 2px solid green;
+        }
+        .header-section img {
+            width: 50px;
+            margin-right: 15px;
+        }
+        .header-section h2 {
+            font-weight: bold;
+            margin: 0;
+        }
+        .card {
+            background-color: #f8f9fa;
+            border: 1px solid #e2e6ea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding-left: 15px ;
             border-left: 5px solid green;
         }
-
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
             background-color: green;
             color: white;
-            padding: 20px 30px;
-            font-weight: bold;
-            padding-left: 15px;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin: -20px -20px 20px -20px;
         }
-
         .status-badge {
             padding: 5px 10px;
             border-radius: 20px;
             color: white;
             font-weight: bold;
-            margin-top: 12px;
         }
-
-        .status-badge.booked { background-color: #28a745; }
-        .status-badge.cancelled { background-color: #dc3545; }
-
-        .card-body {
-            padding: 20px;
+        .status-badge.booked {
+            background-color: #28a745;
         }
-        
-        .card-body h5 {
+        .status-badge.cancelled {
+            background-color: #dc3545;
+        }
+        .status-badge.expired {
+            background-color: #dc3545;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            font-size: 1rem;
+            color: #495057;
+        }
+        .detail-item strong { color: #212529; }
+        .back-button-container {
+            color: white;
+            margin-bottom: 15px;
+        }
+        .btn-cancel-custom {
+            display: inline-block;
+            padding: 10px 18px;    
+            font-size: 14px;      
             font-weight: bold;
-            color: #333;
-        }
-        
-        .card-body p {
-            margin-bottom: 10px;
+            color: #fff;
+            background-color:red; 
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 30%;           
+            margin-top: 10px;
         }
 
+        .btn-cancel-custom:hover {
+            background-color:rgb(194, 71, 71); 
+            border-color: #bd2130;
+        }
         .message-box {
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
             text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
         .message-box.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .message-box.danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        
-        .back-button-container {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        .modal-overlay {
-            display: none; 
+        .modal {
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -108,196 +126,161 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
+            background-color: rgba(0,0,0,0.4);
             justify-content: center;
             align-items: center;
         }
-
         .modal-content {
             background-color: #fefefe;
-            padding: 10px;
-            border-radius: 10px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
             width: 80%;
-            max-width: 700px; 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            border-radius: 10px;
             text-align: center;
-        }
-
-        .modal-header {
-            color: green;
-            font-weight: bold;
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 1.1em;
-            margin-bottom: 25px;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: center;
-            gap: 15px; /* Added gap for spacing between buttons */
-        }
-        
-        .modal-footer button {
-            padding: 10px 20px;
-            border: 2px solid;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #confirm-cancel-btn {
-            background-color: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-
-        #confirm-cancel-btn:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-        }
-
-        #cancel-modal-btn {
-            background-color: gray;
-            color: white; 
-            border-color: #6c757d; 
-        }
-
-        #cancel-modal-btn:hover {
-            background-color: lightgray;
         }
     </style>
 </head>
 <body>
+<form method="post">
+    {% csrf_token %}
     <div class="container">
-        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
-            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
-            Your Hotel Bookings
-        </h2>
+        <div class="header-section">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo">
+            <h2>Your Hotel Bookings</h2>
+        </div>
 
         <div class="back-button-container">
             <a href="{% url 'bookinghistory' %}" class="btn btn-success">Go Back to Booking History</a>
         </div>
-        
-        <div id="message-container"></div>
 
+        <div id="message-container"></div>
+        
         {% if hotel_bookings %}
             {% for booking in hotel_bookings %}
                 <div class="card" id="booking-card-{{ booking.id }}">
                     <div class="card-header">
-                        <span>Booking ID: {{ booking.id }}</span>
-                        <span class="status-badge {{ booking.status|lower }}">{{ booking.status|capfirst }}</span>
+                        <h5 class="mb-0">Booking Details (ID: {{ booking.id }})</h5>
+                        <span class="status-badge 
+                            {% if booking.status|lower == 'cancelled' %}cancelled
+                            {% elif booking.status|lower == 'expired' %}expired
+                            {% else %}booked{% endif %}">
+                            {{ booking.status|capfirst }}
+                        </span>
                     </div>
-                    <div class="card-body">
-                        <h5>{{ booking.hotel.hotel_name }}</h5>
-                        <div>
-                            <strong>Customer Name:</strong> {{ booking.user.full_name }}<br>
-                            <strong>Customer Mobile:</strong> {{ booking.user.mobile }}<br>
-                            <strong>Customer CNIC:</strong> {{ booking.user.cnic }}<br>
-                            <strong>Location:</strong> {{ booking.hotel.location }}<br>
-                            <strong>Check-in:</strong> {{ booking.check_in_date|date:"F d, Y" }}<br>
-                            <strong>Check-out:</strong> {{ booking.check_out_date|date:"F d, Y" }}<br>
-                            <strong>Room Rent:</strong> PKR {{ booking.hotel.room_rent }}<br>
-                        </div>
-                        
-                        <div class="mt-3">
-                            {% if booking.status != 'Cancelled' %}
-                                <button class="btn btn-danger cancel-booking-btn" data-booking-id="{{ booking.id }}">Cancel Reservation</button>
-                            {% endif %}
-                        </div>
+
+                    <div class="details-grid">
+                        <div class="detail-item"><strong>Hotel Name:</strong> {{ booking.hotel.hotel_name }}</div>
+                        <div class="detail-item"><strong>Customer Name:</strong> {{ booking.user.full_name }}</div>
+                        <div class="detail-item"><strong>Customer Mobile:</strong> {{ booking.user.mobile }}</div>
+                        <div class="detail-item"><strong>Location:</strong> {{ booking.hotel.location }}</div>
+                        <div class="detail-item"><strong>Check-in:</strong> {{ booking.check_in_date|date:"F d, Y" }}</div>
+                        <div class="detail-item"><strong>Check-out:</strong> {{ booking.check_out_date|date:"F d, Y" }}</div>
+                        <div class="detail-item"><strong>Room Rent:</strong> PKR {{ booking.hotel.room_rent }}</div>
                     </div>
+
+                    {% if booking.status|lower != 'cancelled' and booking.status|lower != 'expired' %}
+                        <!-- Added type="button" to prevent form submission -->
+                        <button type="button" class="btn-cancel-custom cancel-booking-btn" data-booking-id="{{ booking.id }}">
+                            Cancel Reservation
+                        </button>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}
-            <div class="alert alert-info">
-                You have no hotel bookings yet.
-            </div>
+            <p class="text-center">You have no hotel booking history.</p>
         {% endif %}
     </div>
+</form>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirmation-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                Are you sure?
-            </div>
-            <div class="modal-body">
-                Do you really want to cancel this reservation? This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <button id="confirm-cancel-btn">Yes, Cancel</button>
-                <button id="cancel-modal-btn">No</button>
-            </div>
-        </div>
+<!-- Cancellation Confirmation Modal -->
+<div id="confirmation-modal" class="modal">
+    <div class="modal-content">
+        <p>Are you sure you want to cancel this reservation?</p>
+        <button id="confirm-cancel-btn" class="btn btn-danger">Yes, Cancel</button>
+        <button id="cancel-modal-btn" class="btn btn-secondary">No, Go Back</button>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function showMessage(type, message) {
             const messageContainer = document.getElementById('message-container');
-            const confirmationModal = document.getElementById('confirmation-modal');
-            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
-            const cancelModalBtn = document.getElementById('cancel-modal-btn');
-            let currentBookingId = null;
+            messageContainer.innerHTML = '';
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
 
-            function showMessage(type, message) {
-                messageContainer.innerHTML = `<div class="message-box ${type}">${message}</div>`;
-            }
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.style.transform = 'translateY(-10px)';
+                setTimeout(() => messageContainer.innerHTML = '', 500);
+            }, 3000);
+        }
 
-            document.querySelectorAll('.cancel-booking-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    currentBookingId = this.dataset.bookingId;
-                    confirmationModal.style.display = 'flex';
-                });
-            });
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+        const cancelModalBtn = document.getElementById('cancel-modal-btn');
+        let currentBookingId = null;
 
-            confirmCancelBtn.addEventListener('click', function() {
-                confirmationModal.style.display = 'none';
-
-                if (currentBookingId) {
-                    fetch("{% url 'cancel_hotel_booking' %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({ 'booking_id': currentBookingId })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            showMessage('success', data.message);
-                            const card = document.getElementById(`booking-card-${currentBookingId}`);
-                            const statusBadge = card.querySelector('.status-badge');
-                            statusBadge.textContent = 'Cancelled';
-                            statusBadge.classList.remove('booked');
-                            statusBadge.classList.add('cancelled');
-                            document.querySelector(`.cancel-booking-btn[data-booking-id="${currentBookingId}"]`).style.display = 'none';
-                        } else {
-                            showMessage('danger', data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showMessage('danger', 'An error occurred. Please try again.');
-                    });
-                }
-            });
-
-            cancelModalBtn.addEventListener('click', function() {
-                confirmationModal.style.display = 'none';
+        document.querySelectorAll('.cancel-booking-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                currentBookingId = this.dataset.bookingId;
+                confirmationModal.style.display = 'flex';
             });
         });
-    </script>
+
+        confirmCancelBtn.addEventListener('click', function() {
+            confirmationModal.style.display = 'none';
+
+            if (currentBookingId) {
+                const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+                
+                // Corrected fetch URL to match urls.py
+                fetch(`{% url 'cancel_hotel_booking' booking_id=0 %}`.replace('0', currentBookingId), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned status code: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showMessage('success', data.message);
+                        const bookingCard = document.getElementById(`booking-card-${currentBookingId}`);
+                        if (bookingCard) {
+                            const statusBadge = bookingCard.querySelector('.status-badge');
+                            statusBadge.classList.remove('booked');
+                            statusBadge.classList.add('cancelled');
+                            statusBadge.textContent = 'Cancelled';
+                            
+                            const cancelButton = bookingCard.querySelector('.btn-cancel-custom');
+                            if (cancelButton) {
+                                cancelButton.style.display = 'none';
+                            }
+                        }
+                    } else {
+                        showMessage('danger', 'Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('danger', 'An error occurred. Please try again.');
+                });
+            }
+        });
+
+        cancelModalBtn.addEventListener('click', function() {
+            confirmationModal.style.display = 'none';
+        });
+    });
+</script>
+
 </body>
 </html>

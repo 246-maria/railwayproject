@@ -65,7 +65,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2rem;
+            margin-top: 20px;
         }
 
         th, td {
@@ -77,6 +77,13 @@
         th {
             background-color: darkgreen;
             color: white;
+        }
+
+        .row-even {
+            background-color: rgb(188, 226, 188); 
+        }
+        .row-odd {
+            background-color: white;
         }
 
         button {
@@ -163,19 +170,21 @@
                         <th>Location</th>
                         <th>Rent/night</th>
                         <th>Rooms</th>
+                        <th>Availability Date</th>
                         <th>Facilities</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for hotel in hotels %}
-                    <tr>
+                    <tr class="{% if forloop.counter|divisibleby:2 %}row-even{% else %}row-odd{% endif %}">
                         <td>{{ hotel.pk }}</td>
                         <td>{{ hotel.hotel_name }}</td>
                         <td>{{ hotel.contact_number }}</td>
                         <td>{{ hotel.location }}</td>
                         <td>{{ hotel.room_rent }}</td>
                         <td>{{ hotel.available_rooms }} / {{ hotel.total_rooms }}</td>
+                        <td>{{ hotel.booking_date|date:"Y-m-d" }}</td>
                         <td>{{ hotel.facilities }}</td>
                         <td>
                             <button onclick="showUpdateForm('{{ hotel.pk }}')" class="update">Update</button>
@@ -192,7 +201,6 @@
             </table>
         </div>
 
-        <!-- Add Hotel Form -->
         <div id="add-form-section">
             <h3>Add New Hotel</h3>
             <form method="post" action="{% url 'hotel_management' %}">
@@ -220,14 +228,13 @@
                 <label>Facilities:</label>
                 <textarea name="facilities"></textarea>
 
-                <label>Booking Date:</label>
-                <input type="date" name="booking_date">
+                <label>Availability Date:</label>
+                <input type="date" id="add-booking-date" name="booking_date" required>
 
                 <button type="submit" style="width:100%; background-color:darkgreen; color:white; padding:0.5rem; border-radius:0.375rem;">Add Hotel</button>
             </form>
         </div>
 
-        <!-- Update Hotel Forms -->
         {% for hotel in hotels %}
         <div id="update-form-{{ hotel.pk }}" class="hidden">
             <h3>Update Hotel (ID: {{ hotel.pk }})</h3>
@@ -257,8 +264,8 @@
                 <label>Facilities:</label>
                 <textarea name="facilities">{{ hotel.facilities }}</textarea>
 
-                <label>Booking Date:</label>
-                <input type="date" name="booking_date" value="{{ hotel.booking_date|date:'Y-m-d' }}">
+                <label>Availability Date:</label>
+                <input type="date" id="update-booking-date-{{ hotel.pk }}" name="booking_date" value="{{ hotel.booking_date|date:'Y-m-d' }}" required>
 
                 <div class="flex-space">
                     <button type="submit" style="flex:1; background-color:darkgreen; color: white;">Update Hotel</button>
@@ -270,16 +277,32 @@
     </div>
 
     <script>
-        function showUpdateForm(hotelId) {
-            document.querySelectorAll('[id^="update-form-"]').forEach(form => form.classList.add('hidden'));
-            document.getElementById(`update-form-${hotelId}`).classList.remove('hidden');
-            document.getElementById('add-form-section').classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+
+        const maxDateObj = new Date();
+        maxDateObj.setMonth(maxDateObj.getMonth() + 2);
+        const maxYYYY = maxDateObj.getFullYear();
+        const maxMM = String(maxDateObj.getMonth() + 1).padStart(2, '0');
+        const maxDD = String(maxDateObj.getDate()).padStart(2, '0');
+        const maxDate = `${maxYYYY}-${maxMM}-${maxDD}`;
+
+        const addDateInput = document.getElementById('add-booking-date');
+        if (addDateInput) {
+            addDateInput.setAttribute('min', minDate);
+            addDateInput.setAttribute('max', maxDate);
         }
 
-        function hideUpdateForm(hotelId) {
-            document.getElementById(`update-form-${hotelId}`).classList.add('hidden');
-            document.getElementById('add-form-section').classList.remove('hidden');
-        }
-    </script>
+        document.querySelectorAll('[id^="update-booking-date-"]').forEach(input => {
+            input.setAttribute('min', minDate);
+            input.setAttribute('max', maxDate);
+        });
+    });
+</script>
+
 </body>
 </html>

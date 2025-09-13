@@ -7,6 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Railway Reservation System Login</title>
     <link rel="stylesheet" href="{% static 'css/newlogin.css' %}?v=1.6">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.8em;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -18,16 +26,16 @@
         </h2>
         <hr>
 
-        <form method="POST" action="{% url 'newlogin' %}">
+        <form method="POST" action="{% url 'newlogin' %}" onsubmit="return validateForm()">
             {% csrf_token %}
             {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                <li style="color:red; font-weight: bold; text-align: center;">
-                    {{ message }}
-                </li>
-                {% endfor %}
-            </ul>
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li style="color:red; font-weight: bold; text-align: center;">
+                            {{ message }}
+                        </li>
+                    {% endfor %}
+                </ul>
             {% endif %}
 
             <label for="email">Email Address:</label>
@@ -36,9 +44,14 @@
 
             <div style="position: relative; margin-top: 10px;">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" style="width: 91%; padding-right: 40px;">
-                <input type="checkbox" onclick="togglePassword()" style="position: absolute; left: 190px; top: 50%; transform: translateY(-50%);">
-                <span id="password-error" class="error-message"></span>
+                <input type="password" id="password" name="password"
+                    placeholder="Enter your password"
+                    style="width: 91%; padding-right: 40px;">
+                <input type="checkbox" onclick="togglePassword()"
+                    style="position: absolute; left: 190px; top: 50%; transform: translateY(-50%);">
+                <span style="position: absolute; left: 210px; top: 65%; transform: translateY(-50%); font-size: 12px;">
+                    
+                </span>
             </div>
 
             <button type="submit">Login</button>
@@ -51,7 +64,43 @@
         </form>
     </div>
 
-    <script src="{% static 'js/newlogin.js'%}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const emailInput = document.getElementById('email');
+            const emailError = document.getElementById('email-error');
+            const passwordField = document.getElementById('password');
+
+            window.togglePassword = function() {
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                } else {
+                    passwordField.type = "password";
+                }
+            }
+
+            emailInput.addEventListener('blur', () => {
+                validateEmail();
+            });
+
+            function validateEmail() {
+                const email = emailInput.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!emailRegex.test(email)) {
+                    emailError.textContent = "Please enter a valid email address.";
+                    return false;
+                } else {
+                    emailError.textContent = "";
+                    return true;
+                }
+            }
+
+            window.validateForm = function() {
+                const isEmailValid = validateEmail();
+                return isEmailValid;
+            }
+        });
+    </script>
 </body>
 
 </html>

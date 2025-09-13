@@ -40,6 +40,7 @@ urlpatterns = [
     path('ticket/<int:booking_id>/', views.ticket, name='ticket'),
     path('book_hotel/', views.book_hotel, name='book_hotel'),
     path('bookinghistory/', views.booking_history, name='booking_history'),
+    path('cancel/<int:booking_id>/', views.cancel, name='cancel'),
 
     #admin profile
     path('adminprodetails/', views.adminprodetails, name='adminprodetails'),
@@ -133,11 +134,8 @@ urlpatterns = [
     path('booking-details/<int:booking_id>/', views.booking_details_view, name='booking_details'),
     path('get-to-locations/', views.get_to_locations, name='get_to_locations'),
     path('get-hotels-by-location/', views.get_hotels_by_location, name='get_hotels_by_location'),
-    path('hotel-details/', views.hoteldetails, name='hoteldetails'),
     path('taxi-booking/', views.taxi_booking_view, name='taxi_booking'),
-    path('cancel-hotel-booking/', views.cancel_hotel_booking, name='cancel_hotel_booking'),
     path('cancel-hotel-booking/<int:booking_id>/', views.cancel_hotel_booking, name='cancel_hotel_booking'),
-    path('cancel_hotel_booking/', views.cancel_hotel_booking, name= 'cancel_hotel_booking'),
     path('get-to-locations/', views.get_to_locations, name='get_to_locations'),
     path('confirm-booking/', views.confirm_booking_view, name='confirm_booking'),
     path('booking-details/<int:booking_id>/', views.booking_details_view, name='booking_details'),
