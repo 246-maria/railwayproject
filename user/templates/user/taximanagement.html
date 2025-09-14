@@ -36,19 +36,13 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
             display: flex;
-            justify-content: center;
+            justify-content: left;
             align-items: center;
             gap: 10px;
         }
         h3{
             text-align: left;
             color: black;
-        }
-        .logo {
-            width: 50px;
-            height: auto;
-            margin-right: 10px;
-            padding-top: 3px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -73,12 +67,9 @@
             gap: 10px;
         }
         .btn {
-            /* Updated styles for smaller buttons */
             padding: 0.25rem 0.5rem;
             border-radius: 0.375rem;
             font-size: 0.875rem;
-            /* End of updated styles */
-
             cursor: pointer;
             border: none;
             transition: background-color 0.3s ease;
@@ -128,47 +119,51 @@
             font-weight: 600;
             margin-right: 1080px;
         }
-
         a.button:hover {
             background-color: green;
         }
-
         .alert-success {
-            background-color: #d1fae5;
-            color: #065f46;
+            background-color: #17c21f;
+            color: #fafafa;
             padding: 1rem;
             border-radius: 0.375rem;
             margin-bottom: 0.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            transition: opacity 0.5s ease;
         }
-
         .alert-error {
             background-color: #fee2e2;
             color: #991b1b;
             padding: 1rem;
             border-radius: 0.375rem;
             margin-bottom: 0.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            transition: opacity 0.5s ease;
         }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
-            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
+        <h2>
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo" style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
             Taxi Management
         </h2>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         {% endif %}
-    <a href="{% url 'manage_services' %}" class="button">Back to Main</a>
+
+        <a href="{% url 'manage_services' %}" class="button">Back to Main</a>
+
         <h3>All Taxis</h3>
-        <div>
         <table>
             <thead>
                 <tr>
@@ -206,21 +201,19 @@
                     <td>{{ taxi.availability }}</td>
                     <td>
                         <button class="btn btn-primary edit-taxi-btn"
-    data-pk="{{ taxi.pk }}"
-    data-driver-name="{{ taxi.driver_name }}"
-    data-driver-contact="{{ taxi.driver_contact }}"
-    data-taxi-number="{{ taxi.taxi_number }}"
-    data-taxi-name="{{ taxi.taxi_name }}"
-    data-city="{{ taxi.city }}"
-    data-from-location="{{ taxi.from_location }}"
-    data-to-location="{{ taxi.to_location }}"
-    data-fare="{{ taxi.fare }}"
-    data-travel-date="{{ taxi.travel_date|date:'Y-m-d' }}"
-    data-travel-time="{{ taxi.travel_time|time:'H:i' }}"
-    data-availability="{{ taxi.availability }}"
-    data-status="{{ taxi.status }}">
-    Edit
-</button>
+                            data-pk="{{ taxi.pk }}"
+                            data-driver-name="{{ taxi.driver_name }}"
+                            data-driver-contact="{{ taxi.driver_contact }}"
+                            data-taxi-number="{{ taxi.taxi_number }}"
+                            data-taxi-name="{{ taxi.taxi_name }}"
+                            data-city="{{ taxi.city }}"
+                            data-from-location="{{ taxi.from_location }}"
+                            data-to-location="{{ taxi.to_location }}"
+                            data-fare="{{ taxi.fare }}"
+                            data-travel-date="{{ taxi.travel_date|date:'Y-m-d' }}"
+                            data-travel-time="{{ taxi.travel_time|time:'H:i' }}"
+                            data-availability="{{ taxi.availability }}"
+                            data-status="{{ taxi.status }}">Edit</button>
                         <form action="{% url 'taxi_management' %}" method="POST" style="display:inline;">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
@@ -232,7 +225,6 @@
                 {% endfor %}
             </tbody>
         </table>
-        </div>
 
         <h3>Add/Update Taxi</h3>
         <form action="{% url 'taxi_management' %}" method="POST" id="taxi-form">
@@ -363,6 +355,25 @@
                 );
             });
         });
+
+        const alerts = document.querySelectorAll('.alert-success, .alert-error');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 500);
+            }, 3000);
+        });
+
+        const travelDateInput = document.getElementById('travel_date');
+        const today = new Date();
+        const minDate = today.toISOString().split('T')[0];
+        const twoMonthsLater = new Date();
+        twoMonthsLater.setMonth(today.getMonth() + 2);
+        const maxDate = twoMonthsLater.toISOString().split('T')[0];
+        travelDateInput.min = minDate;
+        travelDateInput.max = maxDate;
     });
 </script>
 

@@ -117,19 +117,22 @@ def verify_otp(request):
             messages.error(request, "Your OTP does not match. Please enter the correct 6-digit code.")
 
     return render(request, 'user/verify_otp.html')
+
 @never_cache
 def newlogin(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
+        
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            if user.is_blocked or user.is_suspended or user.is_deleted:
-                messages.error(request, "Your account is not active. Contact admin.")
-                return render(request, 'user/newlogin.html')
-
+            if not user.is_active or user.is_blocked or user.is_deleted:
+                messages.error(request, "Your account is not active. Please contact the admin.")
+                return redirect(reverse('newlogin')) 
+            
             login(request, user)
+            
             Notification.objects.create(
                 user=user,
                 message=f"Welcome back, {user.full_name}!",
@@ -142,20 +145,29 @@ def newlogin(request):
                 return redirect('profile')
         else:
             messages.error(request, "Invalid email or password.")
-            return render(request, 'user/newlogin.html')
-
+            return redirect(reverse('newlogin')) 
+    
     return render(request, 'user/newlogin.html')
-
 @login_required
 def delete_account(request):
     if request.method == 'POST':
         password = request.POST.get("password")
         user = request.user
+        
         if user.check_password(password):
             try:
-                user.delete()
+                user.full_name = "Deleted User"
+                user.email = f"deleted_user_{user.id}"  
+                user.mobile = ""  
+                user.cnic = ""  
+                
+                user.is_active = False
+                user.is_deleted = True
+                user.save()
+                
                 logout(request)
-                messages.success(request, "Your account has been permanently deleted.")
+                
+                messages.success(request, "Your account has been successfully deleted.")
                 return redirect(reverse('index'))
             except Exception as e:
                 messages.error(request, f"An error occurred while deleting your account: {e}")

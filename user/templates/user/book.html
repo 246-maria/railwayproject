@@ -4,140 +4,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/book.css' %}?v=1.2">
     <title>Book Ticket</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom CSS for background image */
-        body {
-            background-image: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        /* Style for read-only inputs */
-        input[readonly], p {
-            cursor: not-allowed;
-            background-color: #e9ecef !important;
-        }
-    </style>
+
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="container bg-white p-6 rounded-xl shadow-lg w-full max-w-xl">
-        <h2 class="text-center text-green-700 font-bold text-2xl mb-6 flex items-center justify-center gap-2 border-b-2 border-green-600 pb-2">
-            <img src="{% static 'images/logo.jpg' %}" alt="My Logo" class="w-12 h-auto"> Book Your Ticket
+<body>
+
+    <div class="container">
+        <h2>
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo">
+            Book Your Ticket
         </h2>
 
         {% if messages %}
-        <div class="mb-4">
             {% for message in messages %}
-                <div class="px-4 py-2 rounded-lg border {% if message.tags == 'success' %}bg-green-100 text-green-700 border-green-300{% else %}bg-red-100 text-red-700 border-red-300{% endif %}">
+                <div style="margin-bottom:10px; padding:8px; border-radius:5px; border:1px solid #ccc; background:#f1f1f1;">
                     {{ message }}
                 </div>
             {% endfor %}
-        </div>
         {% endif %}
 
-        <div id="js-error-message" class="text-red-600 text-center mb-4"></div>
+        <div id="js-error-message" class="error-message"></div>
 
         <form id="booking-form" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Name:</label>
-                <input type="text" name="full_name" class="w-full px-4 py-2 border rounded-lg" value="{{ user.full_name }}">
-            </div>
+            <label>Name:</label>
+            <input type="text" name="full_name" value="{{ user.full_name }}">
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Email:</label>
-                <input type="email" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ user.email }}" readonly>
-            </div>
+            <label>Email:</label>
+            <input type="email" value="{{ user.email }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Mobile:</label>
-                <input type="text" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ user.mobile }}" readonly>
-            </div>
+            <label>Mobile:</label>
+            <input type="text" value="{{ user.mobile }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Train:</label>
-                <p class="w-full px-4 py-2 border rounded-lg bg-gray-200">{{ train.train_name }}</p>
-                <input type="hidden" name="train_id" value="{{ train.id }}">
-            </div>
+            <label>Train:</label>
+            <p>{{ train.train_name }}</p>
+            <input type="hidden" name="train_id" value="{{ train.id }}">
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">From Station:</label>
-                <input type="text" name="from_station" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ train.from_station }}" readonly>
-            </div>
+            <label>From Station:</label>
+            <input type="text" name="from_station" value="{{ train.from_station }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">To Station:</label>
-                <input type="text" name="to_station" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ train.to_station }}" readonly>
-            </div>
+            <label>To Station:</label>
+            <input type="text" name="to_station" value="{{ train.to_station }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Class:</label>
-                <input type="text" name="travel_class" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ travel_class }}" readonly>
-            </div>
+            <label>Class:</label>
+            <input type="text" name="travel_class" value="{{ travel_class }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">No. of Passengers:</label>
-                <input type="number" name="no_of_passengers" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ no_of_passenger }}" readonly>
-            </div>
+            <label>No. of Passengers:</label>
+            <input type="number" name="no_of_passengers" value="{{ no_of_passenger }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Total Fare:</label>
-                <input type="text" name="total_fare" class="w-full px-4 py-2 border rounded-lg bg-gray-200" value="{{ total_fare }}" readonly>
-            </div>
+            <label>Total Fare:</label>
+            <input type="text" name="total_fare" value="{{ total_fare }}" readonly>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Payment Method:</label>
-                <select name="payment_method" id="payment_method" class="w-full px-4 py-2 border rounded-lg bg-white cursor-pointer" required>
-                    <option value="">-- Select --</option>
-                    <option value="JazzCash">JazzCash (03030845656)</option>
-                    <option value="EasyPaisa">EasyPaisa (03456231390)</option>
-                </select>
-            </div>
+            <label>Payment Method:</label>
+            <select name="payment_method" id="payment_method" required>
+                <option value="">-- Select --</option>
+                <option value="JazzCash">JazzCash (03030845656)</option>
+                <option value="EasyPaisa">EasyPaisa (03456231390)</option>
+            </select>
 
-            <div class="mb-6">
-                <label class="block text-gray-700 font-semibold mb-2">Upload Payment Screenshot:</label>
-                <input type="file" name="payment_screenshot" id="payment_screenshot" class="w-full text-gray-700" accept="image/*" required>
-            </div>
+            <label>Upload Payment Screenshot:</label>
+            <input type="file" name="payment_screenshot" id="payment_screenshot" accept="image/*" required>
 
-            <div class="text-center">
-                <button type="submit" class="btn bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full transition-colors duration-300">
-                    Confirm Booking
-                </button>
-            </div>
+            <button type="submit">Confirm Booking</button>
         </form>
     </div>
 
-    <script>
-        document.getElementById('booking-form').addEventListener('submit', function(event) {
-            const paymentMethod = document.getElementById('payment_method').value;
-            const screenshotFile = document.getElementById('payment_screenshot').files[0];
-            const errorMessageDiv = document.getElementById('js-error-message');
-            
-            errorMessageDiv.textContent = '';
+<script>
+    document.getElementById('booking-form').addEventListener('submit', function(event) {
+        const paymentMethod = document.getElementById('payment_method').value;
+        const screenshotFile = document.getElementById('payment_screenshot').files[0];
+        const errorMessageDiv = document.getElementById('js-error-message');
+        
+        errorMessageDiv.textContent = '';
 
-            // Check if payment method is selected
-            if (!paymentMethod) {
-                errorMessageDiv.textContent = 'Please select a payment method.';
-                event.preventDefault();
-                return;
-            }
+        if (!paymentMethod) {
+            errorMessageDiv.textContent = 'Please select a payment method.';
+            event.preventDefault();
+            return;
+        }
 
-            // Check if a screenshot is uploaded
-            if (!screenshotFile) {
-                errorMessageDiv.textContent = 'Please upload a payment screenshot.';
-                event.preventDefault();
-                return;
-            }
+        if (!screenshotFile) {
+            errorMessageDiv.textContent = 'Please upload a payment screenshot.';
+            event.preventDefault();
+            return;
+        }
+    });
+</script>
 
-        });
-    </script>
 </body>
 </html>

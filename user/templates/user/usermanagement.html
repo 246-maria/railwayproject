@@ -27,32 +27,39 @@
                 <th>Date Joined</th>
             </tr>
         </thead>
-       <tbody>
-    {% for user in users %}
-    <tr>
-        <td>{{ user.full_name }}</td>
-        <td>{{ user.cnic }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.mobile }}</td>
-        <td>
-            {% if user.is_blocked %}
-                Blocked
-            {% elif user.is_suspended %}
-                Suspended
-            {% else %}
-                Active
-            {% endif %}
-        </td>
-       <td>
-    <a href="{% url 'activateuser' user.id %}" class="btn activate">Activate</a>
-    <a href="{% url 'blockuser' user.id %}" class="btn block">Block</a>
-    <a href="{% url 'deleteuser' user.id %}" class="btn delete">Delete</a>
-</td>
-        <td>{{ user.date_joined }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-
-    
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.cnic }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.mobile }}</td>
+                <td>
+                    {% if user.is_deleted %}
+                        <span style="color: red;">Deleted</span>
+                    {% elif user.is_blocked %}
+                        <span style="color: orange;">Blocked</span>
+                    {% elif user.is_suspended %}
+                        <span style="color: #6c757d;">Suspended</span>
+                    {% else %}
+                        <span style="color: green;">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_deleted %}
+                        <span style="color: red; font-weight: bold;">Account Deleted</span>
+                    {% else %}
+                        <a href="{% url 'activateuser' user.id %}" class="btn activate">Activate</a>
+                        <a href="{% url 'blockuser' user.id %}" class="btn block">Block</a>
+                        <a href="{% url 'deleteuser' user.id %}" class="btn delete">Delete</a>
+                    {% endif %}
+                </td>
+                <td>{{ user.date_joined|date:"M d, Y, h:i a" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
     </table>
 </div>
+
+</body>
+</html>
