@@ -73,7 +73,7 @@ function validateForm(event) {
         isFormValid = false;
     }
     
-    // CNIC Validation (now checks for 5-7-1 format with hyphens)
+    // CNIC Validation
     if (!/^\d{5}-\d{7}-\d{1}$/.test(cnicInput.value.trim())) {
         showValidationError(cnicInput, 'Please enter CNIC in the format 00000-0000000-0.');
         isFormValid = false;
@@ -111,6 +111,7 @@ function validateForm(event) {
 }
 
 // Attach a 'blur' event listener to all input fields for live validation.
+// And CNIC formatting logic
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input').forEach(input => {
         input.addEventListener('blur', (event) => {
@@ -158,5 +159,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
         });
+    });
+
+    // CNIC input field mein hyphens (dashes) automatically daalne ke liye event listener
+    const cnicInput = document.getElementById('cnicNumber');
+    cnicInput.addEventListener('input', function(event) {
+        let value = cnicInput.value.replace(/-/g, ''); // Pehle se maujood hyphens ko hata dein
+        
+        let formattedValue = '';
+        if (value.length > 5) {
+            formattedValue = value.substring(0, 5) + '-' + value.substring(5, 12);
+        } else {
+            formattedValue = value;
+        }
+        
+        if (value.length > 12) {
+            formattedValue += '-' + value.substring(12, 13);
+        }
+
+        cnicInput.value = formattedValue;
     });
 });

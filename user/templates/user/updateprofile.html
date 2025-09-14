@@ -41,7 +41,7 @@
         <div id="mobile-error" class="error-message"></div>
 
         <label>CNIC:</label>
-        <input type="text" id="cnic" name="cnic" value="{{ cnic}}" placeholder="0000000000000" maxlength="13">
+        <input type="text" id="cnic" name="cnic" value="{{ cnic}}" placeholder="00000-0000000-0">
         <div id="cnic-error" class="error-message"></div>
 
         <label>Email:</label>
@@ -104,9 +104,10 @@
             mobileError.textContent = "";
         }
 
-        const cnicRegex = /^\d{13}$/;
+        const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+        // CNIC validation logic updated for the new format
         if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
-            cnicError.textContent = "Please enter a valid 13-digit CNIC number without dashes.";
+            cnicError.textContent = "Please enter a valid CNIC in the format 00000-0000000-0.";
             isValid = false;
         } else {
             cnicError.textContent = "";
@@ -119,12 +120,23 @@
         } else {
             emailError.textContent = "";
         }
+
         if (passwordInput.value !== confirmPasswordInput.value) {
             confirmPasswordError.textContent = "Passwords do not match.";
             isValid = false;
         } else {
             confirmPasswordError.textContent = "";
         }
+        
+        // New password validation
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
+        if (passwordInput.value && !passwordRegex.test(passwordInput.value)) {
+            passwordError.textContent = "Password must be 8-25 characters with uppercase, number, and special character.";
+            isValid = false;
+        } else {
+            passwordError.textContent = "";
+        }
+
         if (!isValid) {
             e.preventDefault();
         }
@@ -139,10 +151,26 @@
         }
     });
 
+    // CNIC input event listener for auto-formatting
+    cnicInput.addEventListener('input', function() {
+        let value = cnicInput.value.replace(/-/g, ''); // Remove existing hyphens
+        let formattedValue = '';
+        if (value.length > 5) {
+            formattedValue = value.substring(0, 5) + '-' + value.substring(5, 12);
+        } else {
+            formattedValue = value;
+        }
+        if (value.length > 12) {
+            formattedValue += '-' + value.substring(12, 13);
+        }
+        cnicInput.value = formattedValue;
+    });
+
+    // `blur` event listener for CNIC to validate the formatted input
     cnicInput.addEventListener('blur', function() {
-        const cnicRegex = /^\d{13}$/;
+        const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
         if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
-            cnicError.textContent = "Please enter a valid 13-digit CNIC number without dashes.";
+            cnicError.textContent = "Please enter a valid CNIC in the format 00000-0000000-0.";
         } else {
             cnicError.textContent = "";
         }
@@ -156,5 +184,24 @@
             emailError.textContent = "";
         }
     });
+    
+    // Password validation on blur
+    passwordInput.addEventListener('blur', function() {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
+        if (passwordInput.value && !passwordRegex.test(passwordInput.value)) {
+            passwordError.textContent = "Password must be 8-25 characters with uppercase, number, and special character.";
+        } else {
+            passwordError.textContent = "";
+        }
+    });
+    
+    confirmPasswordInput.addEventListener('blur', function() {
+        if (confirmPasswordInput.value !== passwordInput.value) {
+            confirmPasswordError.textContent = "Passwords do not match.";
+        } else {
+            confirmPasswordError.textContent = "";
+        }
+    });
+
 </script>
 </html>
