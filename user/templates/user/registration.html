@@ -3,18 +3,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Form</title>
     <link rel="stylesheet" href="{% static 'css/registration.css' %}">
 </head>
 <body>
+
+    <div class="toast-container">
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <div class="container">
-        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
+        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
             REGISTER YOURSELF AS RAILWAY RESERVATION USER
         </h2>
-
+        
         <form method="POST" action="{% url 'registration' %}" onsubmit="return validateForm(event)">
             {% csrf_token %}
 
@@ -72,15 +82,5 @@
         </form>
     </div>
     <script src="{% static 'js/registration.js' %}"></script>
-    <script>
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
-        }
-    }
-</script>
 </body>
 </html>

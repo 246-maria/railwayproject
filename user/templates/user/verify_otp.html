@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'favicon.ico' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify OTP</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -31,18 +32,31 @@
         }
         .form-group {
             margin-bottom: 15px;
+            text-align: center;
+        }
+        input.form-group[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box; 
+            text-align: center;
+            font-size: 1.2em;
         }
         .alert {
             animation: fadeOut 0.5s forwards;
+            color: red;
             animation-delay: 2.5s; 
         }
         @keyframes fadeOut {
             from { opacity: 1; }
             to { opacity: 0; display: none; }
         }
-        #timer {
-            font-weight: bold;
-            color: #d9534f;
+        .timer {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #dc3545; 
         }
     </style>
 </head>
@@ -51,7 +65,6 @@
         <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                     style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Enter OTP</h2>
-        
         {% if messages %}
             {% for message in messages %}
                 <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
@@ -59,17 +72,13 @@
                 </div>
             {% endfor %}
         {% endif %}
-
-        <!-- OTP Verify Form -->
-        <form method="post" id="verifyForm">
+        <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <input type="text" name="otp" class="form-control" placeholder="Enter the 6-digit OTP" required maxlength="6">
+                <input type="text" name="otp" class="form-control" placeholder="Enter the 6-digit OTP" maxlength="6"  required>
             </div>
-            <button type="submit" class="btn btn-success btn-block" id="verifyButton">Verify</button>
+            <button type="submit" class="btn btn-success btn-block">Verify</button>
         </form>
-
-        <!-- Resend OTP Form -->
         <form action="{% url 'resend_otp' %}" method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary btn-block mt-2">Resend OTP</button>
@@ -85,10 +94,10 @@
     </div>
     
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', (event) => {
+
             const timerElement = document.getElementById('timer');
-            const verifyButton = document.getElementById('verifyButton');
-            let timeLeft = 30;
+            let timeLeft = 60; 
 
             function updateTimer() {
                 if (timeLeft > 0) {
@@ -96,10 +105,7 @@
                     timeLeft--;
                 } else {
                     timerElement.textContent = 'OTP has expired.';
-                    verifyButton.disabled = true;         // 🔒 Disable Verify Button
-                    verifyButton.classList.remove('btn-success');
-                    verifyButton.classList.add('btn-secondary');
-                    clearInterval(timerInterval);
+                    clearInterval(timerInterval); 
                 }
             }
 

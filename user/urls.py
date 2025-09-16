@@ -112,6 +112,7 @@ urlpatterns = [
     path('update_profile/', views.update_profile, name='update_profile'),
     path('forgot-password-request/', views.forgot_password_request, name='forgot_password_request'),
     path('forgot-password-verify-otp/', views.forgot_password_verify_otp, name='forgot_password_verify_otp'),
+    path('resend-otp/', views.resend_otp_request, name='resend_otp_request'),
     path('forgot-password-new-password/', views.forgot_password_new_password, name='forgot_password_new_password'),
 
 

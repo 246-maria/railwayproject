@@ -1,0 +1,90 @@
+        body {
+            background-image: url("../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: green;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid green;
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 img {
+            width: 50px;
+            height: auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, p {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        input[readonly], p {
+            background: #e9ecef;
+            cursor: not-allowed;
+        }
+        input[type="file"]::file-selector-button {
+    background-color: green; 
+    color: white; 
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+     background: rgb(16, 146, 16);
+}
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: green;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: opx;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: rgb(16, 146, 16);
+        }

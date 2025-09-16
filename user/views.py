@@ -50,11 +50,15 @@ def registration(request):
         confirm_email = request.POST.get("confirm_email")
 
         if Passenger.objects.filter(email=email).exists():
-            messages.error(request, "Email already exists. Please login or use a different email.")
+            messages.error(request, "This email is already registered. Please login or use a different email.")
             return redirect('registration')
 
         if Passenger.objects.filter(mobile=mobile).exists():
-            messages.error(request, "Mobile number already exists. Please login or use a different number.")
+            messages.error(request, "This mobile number is already registered. Please login or use a different number.")
+            return redirect('registration')
+
+        if Passenger.objects.filter(cnic=cnic).exists():
+            messages.error(request, "This CNIC is already registered. Please login.")
             return redirect('registration')
 
         if email != confirm_email:
@@ -87,8 +91,7 @@ def registration(request):
             return redirect('registration')
 
     return render(request, 'user/registration.html')
-
-
+    
 def verify_otp(request):
     session_data = request.session.get('registration_data')
 
@@ -1368,17 +1371,22 @@ def contact_us(request):
 def forgot_password_request(request):
     if request.method == "POST":
         email = request.POST.get('email')
+        
         try:
             user = User.objects.get(email=email)
             otp_code = str(random.randint(100000, 999999))
+            
+            expiration_time = datetime.now() + timedelta(minutes=5)
 
             request.session['reset_data'] = {
                 'email': user.email,
-                'otp': otp_code
+                'otp': otp_code,
+                'otp_expiration': expiration_time.timestamp() 
             }
+            
             send_mail(
                 'Password Reset OTP',
-                f'Your  OTP Verification code is: {otp_code}',
+                f'Your OTP Verification code is: {otp_code}',
                 'railwayreservationsystem591@gmail.com',
                 [email],
                 fail_silently=False,
@@ -1389,19 +1397,25 @@ def forgot_password_request(request):
 
         except User.DoesNotExist:
             messages.error(request, "This email is not registered.")
-
+    
     return render(request, 'user/forget_password_request.html')
+
 
 def forgot_password_verify_otp(request):
     session_data = request.session.get('reset_data')
     if not session_data:
         messages.error(request, "Please start the password reset process again.")
         return redirect('forgot_password_request')
-
+    
+    otp_expiration = datetime.fromtimestamp(session_data.get('otp_expiration'))
+    
     if request.method == "POST":
         otp_entered = request.POST.get('otp')
-
-        if otp_entered == session_data.get('otp'):
+        
+        # Check for expiration on POST request
+        if datetime.now() > otp_expiration:
+            messages.error(request, "The OTP has expired. Please resend.")
+        elif otp_entered == session_data.get('otp'):
             messages.success(request, "OTP verified successfully.")
             return redirect('forgot_password_new_password')
         else:
@@ -1409,6 +1423,42 @@ def forgot_password_verify_otp(request):
 
     return render(request, 'user/password_verify_otp.html')
 
+def resend_otp_request(request):
+    """
+    Handles the resending of OTP. This function is triggered by a POST request
+    from the "Resend OTP" button on the verification page.
+    """
+    session_data = request.session.get('reset_data')
+    if not session_data or 'email' not in session_data:
+        messages.error(request, "Please start the password reset process again.")
+        return redirect('forgot_password_request')
+    
+    try:
+        user = User.objects.get(email=session_data['email'])
+        new_otp = str(random.randint(100000, 999999))
+        
+        # Update session with new OTP and new expiration time
+        expiration_time = datetime.now() + timedelta(minutes=5)
+        request.session['reset_data']['otp'] = new_otp
+        request.session['reset_data']['otp_expiration'] = expiration_time.timestamp()
+        request.session.modified = True
+        
+        send_mail(
+            'Password Reset OTP',
+            f'Your new OTP Verification code is: {new_otp}',
+            'railwayreservationsystem591@gmail.com',
+            [user.email],
+            fail_silently=False,
+        )
+        
+        messages.success(request, "A new OTP has been sent to your email.")
+        
+    except User.DoesNotExist:
+        messages.error(request, "This email is not registered.")
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
+        
+    return redirect('forgot_password_verify_otp')
 def forgot_password_new_password(request):
     session_data = request.session.get('reset_data')
     if not session_data:

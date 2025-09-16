@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    background-image: url("../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.da009bad89b2.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    padding: 40px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+}
+
+ h2 {
+     text-align: center;
+     color: green;
+     border-bottom: 2px solid green;
+     padding-bottom: 10px;
+     margin-bottom: 20px;
+ }
+
+  h3{
+     text-align: left;
+     color: green;
+     border-bottom: 2px solid green;
+     padding-bottom: 10px;
+     margin-bottom: 20px;
+     font-weight: bold;
+ }
+.notify-form {
+    margin-bottom: 30px;
+}
+
+.notify-form label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+.notify-form input,
+.notify-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.notify-form button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: darkgreen;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.notify-form button:hover {
+    background-color: green;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+th {
+    background-color: darkgreen;
+    color: white;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+    color: white;
+}
+button
+{
+    background-color: rgb(204, 42, 42);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border-color: red;
+    cursor: pointer;
+}
+button:hover
+{
+    background-color: red;
+    color: white;
+}

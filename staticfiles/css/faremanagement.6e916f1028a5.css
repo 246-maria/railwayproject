@@ -1,0 +1,150 @@
+ body {
+     font-family: 'Times New Roman', Times, serif;
+     background-color: #f4f4f4;
+     margin: 0;
+     padding: 20px;
+     background-image: url("../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.da009bad89b2.jpg");
+     background-position: center;
+     background-size: cover;
+     background-repeat: no-repeat;
+ }
+
+
+ .container {
+     max-width: 1000px;
+     margin: auto;
+     margin-top: 2%;
+     background: white;
+     padding: 40px;
+     border-radius: 8px;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+ 
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 40px;
+}
+
+.form-section {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+}
+ h2 {
+     text-align: center;
+     color: green;
+     border-bottom: 2px solid green;
+     padding-bottom: 10px;
+     margin-bottom: 20px;
+ }
+h3 {
+     text-align: left;
+     color: black;
+     padding-bottom: 10px;
+     margin-bottom: 20px;
+     
+ }
+
+section{
+    margin-bottom: 40px;
+}
+select
+{
+     padding: 10px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    font-size: 16px;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: center;
+}
+
+table th {
+    background-color: green;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Form styles */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-weight: bold;
+    margin: 10px 0 5px;
+}
+
+input[type="text"],
+input[type="number"] {
+    padding: 10px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button {
+    margin-top: 15px;
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background-color: #1e8449;
+}
+
+/* Responsive Table */
+@media (max-width: 600px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 15px;
+    }
+
+    td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        top: 12px;
+        font-weight: bold;
+        text-align: left;
+    }
+}

@@ -1,0 +1,325 @@
+body, html {
+    font-family: 'Times New Roman', Times, serif;
+    background-image: url("../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.da009bad89b2.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 2000px;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #f0f2f5;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Navbar */
+.nav-bar {
+    background-color: darkgreen;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-bar .logo {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo-img {
+    width: 50px;
+    height: auto;
+    margin-right: 10px;
+    border-radius: 50%;
+    padding-top: 3px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    font-size: 24px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+.nav-links a:hover {
+    transform: scale(1.1);
+}
+
+/* Main Content and Profile Card */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.profile-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.profile-card h2 {
+    text-align: center;
+    color: darkgreen;
+    margin-bottom: 25px;
+    font-size: 28px;
+}
+
+.profile-detail {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-left: 4px solid darkgreen;
+    border-radius: 4px;
+}
+
+.profile-detail .label {
+    font-weight: bold;
+    color: #555;
+    margin-right: 10px;
+}
+
+/* Action Buttons */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.confirm-btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: darkgreen;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.confirm-btn:hover {
+    background-color: green;
+    transform: translateY(-2px);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-message {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-buttons .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn.confirm-btn {
+    background-color: darkgreen;
+}
+
+.btn.confirm-btn:hover {
+    background-color: green;
+}
+
+.btn.cancel-btn {
+    background-color: red;
+}
+
+.btn.cancel-btn:hover {
+    background-color: rgb(206, 70, 70);
+}
+
+.password-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.password-input:focus {
+    outline: none;
+    border-color: darkgreen;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.5);
+}
+
+.btn.delete-btn {
+    background-color: #dc3545;
+}
+
+.btn.delete-btn:hover {
+    background-color: #c82333;
+}
+.btn-edit {
+    padding: 10px 20px;
+    background-color: darkgreen;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-edit:hover {
+    background-color: green;
+}
+
+   .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            display: none; 
+        }
+        .bell-container {
+            position: relative;
+            display: inline-block;
+        }
+ /* General button styles for the profile page */
+.button-group button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+/* Style for the "Delete Account" button on the main profile page */
+.btn-delete {
+    background-color: #dc3545; /* A bright, standard red color */
+    color: white;
+}
+
+/* General modal button styles */
+.modal-buttons .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Style for the red "Yes, Delete My Account" button */
+.modal-buttons .btn-danger {
+    background-color: #dc3545; /* The same bright red */
+    color: white;
+}
+
+/* Style for the "Cancel" buttons */
+.modal-buttons .cancel-btn {
+    background-color: #6c757d; /* A gray color */
+    color: white;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.modal-box p {
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none;
+}
+label
+{
+     font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    text-align: left;
+}       
+input[type="password"]
+{
+    width: 96%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #111010;
+    border-radius: 5px;
+    text-align: left;
+}

@@ -1,0 +1,98 @@
+ body {
+     font-family: 'Times New Roman', Times, serif;
+     background-color: #f4f4f4;
+     margin: 0;
+     padding: 20px;
+     background-image: url('../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg');
+     background-position: center;
+     background-size: cover;
+     background-repeat: no-repeat;
+ }
+ .container {
+     max-width: 1500px;
+     margin: auto;
+     margin-top: 4%;
+     background: white;
+     padding: 40px;
+
+     border-radius: 8px;
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+
+h2 {
+    font-size: 28px;
+    color: green;
+    border-bottom: 2px solid green;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ccc;
+}
+
+th {
+    background-color: green;
+    color: white;
+    text-align: center;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+.active {
+    color: green;
+    font-weight: bold;
+}
+
+.suspended {
+    color: red;
+    font-weight: bold;
+}
+
+form {
+    display: inline;
+}
+
+button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn {
+        padding: 6px 12px;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .block { background-color: #e3342f; }     
+    .activate { background-color: darkgreen; }  
+    .delete { background-color: #6c757d; }     
+    .btn:hover { opacity: 0.8; }
+button.suspend {
+    background-color: #dc3545;
+    color: white;
+}
+
+button.activate {
+    background-color: #28a745;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.85;
+}

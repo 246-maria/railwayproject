@@ -1,0 +1,139 @@
+body {
+    margin: 0;
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #f0f0f0;
+    background-image: url('../images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* Navbar */
+
+    .nav-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 90px;
+        background-color: darkgreen;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        z-index: 1000;
+    }
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+}
+
+.logo img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-links a {
+    color: white;
+    margin-left: 15px;
+    font-size: 20px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: #ffcc00;
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 250px;
+    margin-top: 60px;
+    padding: 30px;
+}
+
+/* Notification Box */
+.notification-box {
+    background: white;
+    width: 100%;
+    max-width: 700px;
+    border-radius: 12px;
+    padding: 100px;
+    margin-top: 3%;
+    margin-left: 100px;
+
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.notification-box h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    color: #006400;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+    text-align: center;
+}
+
+/* Notifications */
+.notification {
+    background: #f9fbff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    transition: transform 0.2s ease-in-out;
+    width: 100%;
+}
+
+.notification:hover {
+    transform: scale(1.02);
+    background: #eef5ff;
+}
+
+.notification .title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #004080;
+    width: 100%;
+}
+
+.notification .message {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.notification .time {
+    font-size: 12px;
+    color: #777;
+    text-align: right;
+}
+
+.empty-msg {
+    text-align: center;
+    font-size: 15px;
+    color: #888;
+    margin-top: 20px;
+}
