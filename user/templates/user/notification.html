@@ -43,7 +43,7 @@
     .delete-btn:hover {
         background-color: #e53935;
     }
-    
+
     .notification {
         display: flex;
         justify-content: space-between;
@@ -87,7 +87,7 @@
             {% endif %}
         </div>
     </main>
-    
+
     {% csrf_token %}
 
     <script>
@@ -116,7 +116,7 @@
                 button.addEventListener('click', function(event) {
                     const notificationId = this.getAttribute('data-id');
                     const notificationElement = document.getElementById(`notification-${notificationId}`);
-                    
+
                     fetch(`/notifications/delete/${notificationId}/`, {
                         method: 'POST',
                         headers: {
@@ -137,14 +137,6 @@
                 });
             });
         });
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
-        }
-    }
     </script>
 </body>
 

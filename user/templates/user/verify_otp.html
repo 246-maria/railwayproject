@@ -2,116 +2,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="{% static 'favicon.ico' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            background: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}") no-repeat center center fixed;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            max-width: 400px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            color: green;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        input.form-group[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            box-sizing: border-box; 
-            text-align: center;
-            font-size: 1.2em;
-        }
-        .alert {
-            animation: fadeOut 0.5s forwards;
-            color: red;
-            animation-delay: 2.5s; 
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; display: none; }
-        }
-        .timer {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #dc3545; 
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link rel="icon" href="{% static 'favicon.ico' %}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP</title>
+  <style>
+    body {
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Times New Roman', Times, serif;
+      background-image: url("{% static 'images/WhatsApp Image 2025-04-11 at 11.36.08_8ccf0fac.jpg' %}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: left;
+      gap: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: darkgreen;
+      border-bottom: 2px solid darkgreen;
+      padding-bottom: 10px;
+    }
+
+    .input {
+      width: 96%;
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #a7a3a3;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 1em;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .btn-verify {
+      background: darkgreen;
+    }
+
+    .btn-resend {
+      background-color: #444;
+    }
+
+    .btn-resend:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .timer {
+      margin-top: 10px;
+      font-size: 14px;
+      color: red;
+    }
+
+    .message {
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .messages {
+      list-style-type: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    .messages li {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .messages .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .messages .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2 style="display: flex; align-items: left; justify-content: left; gap: 10px;">
-            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-                    style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">Enter OTP</h2>
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-                <input type="text" name="otp" class="form-control" placeholder="Enter the 6-digit OTP" maxlength="6"  required>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">Verify</button>
-        </form>
-        <form action="{% url 'resend_otp' %}" method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-block mt-2">Resend OTP</button>
-        </form>
 
-        <p class="mt-3">
-            <small>
-                OTP has been sent to your email address.
-                <br>
-                <span id="timer"></span>
-            </small>
-        </p>
+  <div class="container">
+    <div class="header">
+      <img src="{% static 'images/logo.jpg' %}" alt="My Logo" style="width: 50px; height: auto;">
+      Verify OTP
     </div>
+
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
+    <form method="post" action="{% url 'verify_otp' %}">
+      {% csrf_token %}
+      <input type="text" name="otp" placeholder="Enter OTP" id="otpInput" class="input" maxlength="6">
+      <button type="submit" id="verifyBtn" class="btn btn-verify">Verify</button>
+    </form>
+    
+    <form method="post" action="{% url 'resend_otp' %}">
+      {% csrf_token %}
+      <button type="submit" id="resendBtn" class="btn btn-resend" disabled>Resend OTP</button>
+    </form>
 
-            const timerElement = document.getElementById('timer');
-            let timeLeft = 60; 
+    <div id="timer" class="timer"></div>
+  </div>
 
-            function updateTimer() {
-                if (timeLeft > 0) {
-                    timerElement.textContent = `OTP expires in ${timeLeft} seconds`;
-                    timeLeft--;
-                } else {
-                    timerElement.textContent = 'OTP has expired.';
-                    clearInterval(timerInterval); 
-                }
-            }
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const otpSentTime = new Date('{{ request.session.registration_data.otp_sent_time|default_if_none:"0" }}');
+      const otpExpiration = new Date(otpSentTime.getTime() + 60000);
 
-            const timerInterval = setInterval(updateTimer, 1000);
-            updateTimer();
-        });
-    </script>
+      const timerElement = document.getElementById('timer');
+      const resendBtn = document.getElementById('resendBtn');
+      const messagesContainer = document.querySelector('.messages');
+      let countdownInterval;
+
+      const successMessage = messagesContainer.querySelector('.success');
+      if (successMessage) {
+        setTimeout(() => {
+          successMessage.style.display = 'none';
+        }, 5000);
+      }
+
+      function updateTimer() {
+        const now = new Date();
+        const remaining = Math.floor((otpExpiration - now) / 1000);
+        
+        if (remaining > 0) {
+          const minutes = Math.floor(remaining / 60);
+          const seconds = remaining % 60;
+          timerElement.textContent = `OTP expires in ${minutes}m ${seconds}s`;
+          resendBtn.disabled = true;
+        } else {
+          clearInterval(countdownInterval);
+          timerElement.textContent = 'Your OTP has expired. Please click on the Resend OTP button to get a new one.';
+          resendBtn.disabled = false;
+        }
+      }
+
+      function startTimer() {
+        countdownInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+      }
+
+      if (otpSentTime && otpSentTime.getTime() > 0) {
+        startTimer();
+      } else {
+        timerElement.textContent = 'Please fill out the registration form first.';
+        resendBtn.disabled = false;
+      }
+    });
+  </script>
+
 </body>
 </html>

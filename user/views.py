@@ -548,12 +548,13 @@ def managenotifications(request):
             return redirect('managenotifications')
 
     return render(request, 'managenotifications.html', {"notifications": notifications})
-
 def addnotification(request):
     if request.method == "POST":
         title = request.POST.get("title")
         message = request.POST.get("message")
         Notification.objects.create(title=title, message=message)
+        
+        messages.success(request, "Notification added successfully!")
         return redirect('managenotifications')
     return render(request, 'user/managenotifications.html')
 
@@ -564,8 +565,9 @@ def deletenotification(request, id):
     return redirect('managenotifications')
 
 def managenotifications(request):
-    notifications = Notification.objects.all()
+    notifications = Notification.objects.all().order_by('-created_at')
     return render(request, "user/managenotifications.html", {"notifications": notifications})
+
 
 
 def submit_feedback(request):
@@ -1400,7 +1402,6 @@ def forgot_password_request(request):
     
     return render(request, 'user/forget_password_request.html')
 
-
 def forgot_password_verify_otp(request):
     session_data = request.session.get('reset_data')
     if not session_data:
@@ -1412,14 +1413,18 @@ def forgot_password_verify_otp(request):
     if request.method == "POST":
         otp_entered = request.POST.get('otp')
         
-        # Check for expiration on POST request
         if datetime.now() > otp_expiration:
             messages.error(request, "The OTP has expired. Please resend.")
+            # Important: Add a return statement here
+            return redirect('forgot_password_verify_otp')
         elif otp_entered == session_data.get('otp'):
             messages.success(request, "OTP verified successfully.")
+            # This is the correct line that was missing a return
             return redirect('forgot_password_new_password')
         else:
             messages.error(request, "Invalid OTP.")
+            # Important: Add a return statement here
+            return redirect('forgot_password_verify_otp')
 
     return render(request, 'user/password_verify_otp.html')
 
@@ -1487,6 +1492,7 @@ def forgot_password_new_password(request):
         return redirect('newlogin')
 
     return render(request, 'user/password_rest_form.html')
+
 @login_required
 def user_notification(request):
     five_days_ago = timezone.now() - timedelta(days=5)
@@ -1532,6 +1538,8 @@ def delete_notification(request, notification_id):
         return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 
 @staff_member_required
 @csrf_protect
