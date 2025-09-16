@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{% static 'favicon.ico' %}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Railway Reservation System</title>
-    <link rel="stylesheet" href="{% static 'css/index.css' %}?v=1.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Railway Reservation System</title>
-    
+    <link rel="stylesheet" href="{% static 'css/index.css' %}?v=1.3">
 </head>
 <body>
 
@@ -71,7 +70,6 @@
             <img src="{% static 'images/mardan.jpeg' %}" alt="Train 18">
             <img src="{% static 'images/muktan.jpeg' %}" alt="Train 19">
             <img src="{% static 'images/lahore.jpeg' %}" alt="Train 20">
-            <!-- Pehle wali images ko repeat kiya gaya hai taake seamless loop bane -->
             <img src="{% static 'images/download (1).jpeg' %}" alt="Train 1">
             <img src="{% static 'images/images (1).jpeg' %}" alt="Train 2">
             <img src="{% static 'images/images (2).jpeg' %}" alt="Train 3">
@@ -177,7 +175,6 @@ document.addEventListener("DOMContentLoaded", function() {
     <div class="container">
         <h2 style="text-align:center;">Submit Your Feedback</h2>
         
-        <!-- Feedback messages yahan dikhayenge, form ke upar -->
         {% if messages %}
         <ul class="feedback-messages">
             {% for msg in messages %}
@@ -191,10 +188,12 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="form-group">
                 <label for="user_name">Your Name:</label>
                 <input type="text" id="user_name" name="user_name" required>
+                <small id="name-error-message" style="color: red; display: none;"></small>
             </div>
             <div class="form-group">
                 <label for="user_email">Your Email:</label>
                 <input type="email" id="user_email" name="user_email" required>
+                <small id="email-error-message" style="color: red; display: none;"></small>
             </div>
             <div class="form-group">
                 <label for="feedback_text">Your Feedback:</label>
@@ -279,13 +278,18 @@ document.addEventListener("DOMContentLoaded", function() {
         margin: 0;
         padding: 0;
     }
- 
+    
     .feedback-messages li.success {
         background-color: #d4edda; 
         color: #155724; 
         border: 1px solid #c3e6cb;
     }
-    
+
+    .feedback-messages li.error {
+        background-color: #f8d7da; 
+        color: #721c24; 
+        border: 1px solid #f5c6cb;
+    }
 </style>
 
 <footer>
@@ -295,20 +299,50 @@ document.addEventListener("DOMContentLoaded", function() {
 <script src="{% static 'js/index.js'%}"></script>
 
 <script>
-    setTimeout(function() {
-        const messages = document.querySelector('.feedback-messages');
-        if (messages) {
-            messages.style.display = 'none';
-        }
-    }, 5000); 
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
-        }
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+        const emailInput = document.getElementById('user_email');
+        const emailErrorMessage = document.getElementById('email-error-message');
+        const nameInput = document.getElementById('user_name');
+        const nameErrorMessage = document.getElementById('name-error-message');
+
+        emailInput.addEventListener('blur', function() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(emailInput.value)) {
+                emailErrorMessage.textContent = 'Please enter a correct email with @.com';
+                emailErrorMessage.style.display = 'block';
+                emailInput.style.borderColor = 'red';
+            } else {
+                emailErrorMessage.textContent = '';
+                emailErrorMessage.style.display = 'none';
+                emailInput.style.borderColor = '';
+            }
+        });
+
+        nameInput.addEventListener('blur', function() {
+            const nameRegex = /^[A-Z][a-zA-Z\s]*$/;
+            
+            if (!nameRegex.test(nameInput.value)) {
+                nameErrorMessage.textContent = 'Name must start with a capital letter and contain only alphabets.';
+                nameErrorMessage.style.display = 'block';
+                nameInput.style.borderColor = 'red';
+            } else {
+                nameErrorMessage.textContent = '';
+                nameErrorMessage.style.display = 'none';
+                nameInput.style.borderColor = '';
+            }
+        });
+
+        emailInput.addEventListener('focus', function() {
+            emailErrorMessage.style.display = 'none';
+            emailInput.style.borderColor = '';
+        });
+
+        nameInput.addEventListener('focus', function() {
+            nameErrorMessage.style.display = 'none';
+            nameInput.style.borderColor = '';
+        });
+    });
 </script>
 
 </body>

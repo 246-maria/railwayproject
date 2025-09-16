@@ -64,53 +64,16 @@
       margin-bottom: 10px;
     }
 
-    .btn-verify {
-      background: darkgreen;
-    }
+    .btn-verify { background: darkgreen; }
+    .btn-resend { background-color: #444; }
+    .btn-resend:disabled { background: #ccc; cursor: not-allowed; }
 
-    .btn-resend {
-      background-color: #444;
-    }
+    .timer { margin-top: 10px; font-size: 14px; color: red; }
 
-    .btn-resend:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .timer {
-      margin-top: 10px;
-      font-size: 14px;
-      color: red;
-    }
-
-    .message {
-      margin-top: 15px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .messages {
-      list-style-type: none;
-      padding: 0;
-      margin-top: 20px;
-    }
-
-    .messages li {
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .messages .error {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
-
-    .messages .success {
-      background-color: #d4edda;
-      color: #155724;
-    }
+    .messages { list-style-type: none; padding: 0; margin-top: 20px; }
+    .messages li { padding: 10px; border-radius: 5px; margin-bottom: 10px; text-align: center; }
+    .messages .error { background-color: #f8d7da; color: #721c24; }
+    .messages .success { background-color: #d4edda; color: #155724; }
   </style>
 </head>
 <body>
@@ -126,13 +89,13 @@
         <li class="{{ message.tags }}">{{ message }}</li>
       {% endfor %}
     </ul>
-    
+
     <form method="post" action="{% url 'verify_otp' %}">
       {% csrf_token %}
       <input type="text" name="otp" placeholder="Enter OTP" id="otpInput" class="input" maxlength="6">
       <button type="submit" id="verifyBtn" class="btn btn-verify">Verify</button>
     </form>
-    
+
     <form method="post" action="{% url 'resend_otp' %}">
       {% csrf_token %}
       <button type="submit" id="resendBtn" class="btn btn-resend" disabled>Resend OTP</button>
@@ -143,15 +106,13 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const otpSentTime = new Date('{{ request.session.registration_data.otp_sent_time|default_if_none:"0" }}');
-      const otpExpiration = new Date(otpSentTime.getTime() + 60000);
-
+      const otpSentTimeStr = '{{ request.session.registration_data.otp_sent_time|default:"" }}';
+      const otpSentTime = otpSentTimeStr ? new Date(otpSentTimeStr) : null;
       const timerElement = document.getElementById('timer');
       const resendBtn = document.getElementById('resendBtn');
-      const messagesContainer = document.querySelector('.messages');
       let countdownInterval;
 
-      const successMessage = messagesContainer.querySelector('.success');
+      const successMessage = document.querySelector('.messages .success');
       if (successMessage) {
         setTimeout(() => {
           successMessage.style.display = 'none';
@@ -159,9 +120,16 @@
       }
 
       function updateTimer() {
+        if (!otpSentTime) {
+          timerElement.textContent = 'Please fill out the registration form first.';
+          resendBtn.disabled = false;
+          return;
+        }
+
+        const otpExpiration = new Date(otpSentTime.getTime() + 5 * 60 * 1000);
         const now = new Date();
         const remaining = Math.floor((otpExpiration - now) / 1000);
-        
+
         if (remaining > 0) {
           const minutes = Math.floor(remaining / 60);
           const seconds = remaining % 60;
@@ -174,13 +142,9 @@
         }
       }
 
-      function startTimer() {
+      if (otpSentTime) {
         countdownInterval = setInterval(updateTimer, 1000);
         updateTimer();
-      }
-
-      if (otpSentTime && otpSentTime.getTime() > 0) {
-        startTimer();
       } else {
         timerElement.textContent = 'Please fill out the registration form first.';
         resendBtn.disabled = false;

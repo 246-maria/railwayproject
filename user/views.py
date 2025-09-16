@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -568,8 +570,6 @@ def managenotifications(request):
     notifications = Notification.objects.all().order_by('-created_at')
     return render(request, "user/managenotifications.html", {"notifications": notifications})
 
-
-
 def submit_feedback(request):
     if request.method == 'POST':
         user_name = request.POST.get('user_name')
@@ -577,14 +577,18 @@ def submit_feedback(request):
         feedback_text = request.POST.get('feedback_text')
 
         try:
+            validate_email(user_email)
             Feedback.objects.create(
                 user_name=user_name,
                 user_email=user_email,
                 feedback_text=feedback_text
             )
             messages.success(request, 'Feedback submitted successfully!')
+        except ValidationError:
+            messages.error(request, 'Please enter a valid email address.')
         except Exception as e:
             messages.error(request, f'An error occurred: {e}')
+        
         return redirect(reverse('index'))
     return redirect(reverse('index'))
 
@@ -1496,10 +1500,15 @@ def forgot_password_new_password(request):
 @login_required
 def user_notification(request):
     five_days_ago = timezone.now() - timedelta(days=5)
+    user_joined = request.user.date_joined
+    filter_date = max(five_days_ago, user_joined)
+
     notifications = Notification.objects.filter(
         Q(user=request.user) | Q(user__isnull=True),
-        created_at__gte=five_days_ago
+        created_at__gte=filter_date,
+        is_deleted_by_user=False
     ).order_by('-created_at')
+
     context = {
         'notifications': notifications,
     }
@@ -1529,16 +1538,22 @@ def mark_notification_read(request, notification_id):
 def delete_notification(request, notification_id):
     try:
         notification = get_object_or_404(Notification, id=notification_id)
-        if notification.user == request.user or notification.user is None:
+
+        if request.user.is_staff or request.user.is_superuser:
             notification.delete()
+            return HttpResponse(status=204)  
+
+        if notification.user == request.user or notification.user is None:
+            notification.is_deleted_by_user = True
+            notification.save()
             return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
     except Notification.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Notification not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
 
 
 @staff_member_required

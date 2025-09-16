@@ -14,17 +14,16 @@
         <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
-        Manage Notifications</h2>
+            Manage Notifications
+        </h2>
 
         <form method="POST" action="{% url 'addnotification' %}" class="notify-form">
             {% csrf_token %}
-            
             <label for="title">Title:</label>
             <input type="text" id="title" name="title" required>
 
             <label for="message">Message:</label>
             <textarea id="message" name="message" rows="4" required></textarea>
-
 
             <button type="submit">Send Notification</button>
         </form>
@@ -43,16 +42,13 @@
             <tbody>
                 {% if notifications %}
                     {% for note in notifications %}
-                    <tr>
+                    <tr id="row-{{ note.id }}">
                         <td>{{ forloop.counter }}</td>
                         <td>{{ note.title }}</td>
                         <td>{{ note.message }}</td>
                         <td>{{ note.created_at|date:"M d, Y H:i" }}</td>
                         <td>
-                            <form method="POST" action="{% url 'deletenotification' note.id %}">
-                            {% csrf_token %}
-                            <button type="submit">Delete</button>
-                            </form>
+                            <button type="button" class="delete-btn" data-id="{{ note.id }}">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -64,16 +60,40 @@
             </tbody>
         </table>
     </div>
+
     <script>
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
-        }
-    }
-</script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const csrfToken = "{{ csrf_token }}";
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const noteId = this.dataset.id;
+                    const row = document.getElementById(`row-${noteId}`);
+
+                    fetch(`{% url 'delete_notification' 0 %}`.replace('0', noteId), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken
+                        }
+                    })
+                    .then(response => {
+                        if (response.status === 204) {
+                          
+                            row.remove(); 
+                        } else {
+                            return response.json();
+                        }
+                    })
+                    .then(data => {
+                        if (data && !data.success) {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(err => console.error('Error:', err));
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -55,7 +55,7 @@ input[type="password"] {
 }
 
 .captcha-code {
-    background-color: #ffe5e5;
+    background-color: rgb(221, 203, 203);
     color: red;
     padding: 10px 20px;
     font-weight: bold;
