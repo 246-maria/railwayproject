@@ -71,7 +71,6 @@ html {
     text-decoration: underline;
 }
 
-/*--- Home Section ---*/
 .home {
     background-image: url(../images/badar-ul-islam-majid-ABPY7duAEGo-unsplash.jpg);
     background-size: cover;
@@ -92,7 +91,6 @@ html {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
-/*--- About Section ---*/
 #about {
     padding: 40px 20px;
     background-color: white;

@@ -141,6 +141,15 @@
                 }, 5000 + index * 500);
             });
         });
+
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
     </script>
 </body>
 </html>

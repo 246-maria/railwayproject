@@ -232,6 +232,16 @@
         function editProfile() {
             window.location.href = "{% url 'admin_edit_profile' user_id=user.id %}";
         }
+
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+
     </script>
 </body>
 </html>

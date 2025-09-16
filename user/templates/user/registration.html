@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
             REGISTER YOURSELF AS RAILWAY RESERVATION USER
@@ -19,10 +19,10 @@
             {% csrf_token %}
 
             <label>Full Name:</label>
-            <input type="text" name="full_name" placeholder="Full Name" required>
+            <input type="text" name="full_name" placeholder="Full Name" required maxlength="50">
 
             <label>Mobile No:</label>
-            <input type="text" name="mobile" id="mobileNumber" placeholder="03001234567" maxlength="11" required>
+            <input type="text" name="mobile" id="mobileNumber" maxlength="11" value="03" placeholder="03xxxxxxxxx" required>
 
             <label>Email Address:</label>
             <input type="email" name="email" placeholder="abc@gmail.com" required>
@@ -72,5 +72,15 @@
         </form>
     </div>
     <script src="{% static 'js/registration.js' %}"></script>
+    <script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 </html>

@@ -334,6 +334,14 @@
             confirmPasswordError.textContent = this.value && this.value !== passwordInput.value
                 ? "Passwords do not match." : "";
         });
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
     </script>
 </body>
 </html>

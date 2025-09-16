@@ -67,6 +67,15 @@
 <a href="{% url 'taxi_management' %}"><button class="btn">Taxi Management</button></a>
 <a href="{% url 'hotel_management' %}"><button class="btn">Hotel Management</button></a>
   </div>
-
+<script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 </html>

@@ -41,7 +41,16 @@
 
     </div>
 <script src="{% static 'js/adminpanel.js' %}"></script>
-
+<script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 
 </html>

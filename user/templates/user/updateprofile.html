@@ -202,6 +202,13 @@
             confirmPasswordError.textContent = "";
         }
     });
-
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
 </script>
 </html>

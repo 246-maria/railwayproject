@@ -285,6 +285,15 @@
         </tbody>
     </table>
 </div>
-
+<script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 </html>

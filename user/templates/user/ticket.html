@@ -291,5 +291,15 @@
             <p>No ticket found. Please check your booking details.</p>
         </div>
     {% endif %}
+    <script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 </html>

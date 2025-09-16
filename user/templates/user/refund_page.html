@@ -25,5 +25,15 @@
             <a href="{% url 'train_history' %}" class="btn btn-primary mt-3">Go to Booking History</a>
         </div>
     </div>
+    <script>
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
+</script>
 </body>
 </html>

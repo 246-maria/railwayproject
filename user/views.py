@@ -1,45 +1,44 @@
 import random
+import logging
+import uuid, pytz
+from decimal import Decimal
+from datetime import datetime, timedelta
+
 from django.contrib import messages
 from django.contrib.auth import (
     authenticate, login, logout, get_user_model, update_session_auth_hash
 )
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.utils import timezone
-from datetime import datetime, timedelta
-from django.core.exceptions import ObjectDoesNotExist
-import logging
-import json
-from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
-from xhtml2pdf import pisa
-from django.template.loader import get_template
-from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.csrf import csrf_protect
-from django.core.mail import send_mail
-from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.http import require_POST
-from django.core.mail import EmailMessage
+from django.core.mail import send_mail, EmailMessage
+
+from .utils import send_otp_email, generate_otp
 from .forms import FAQForm, PassengerForm, AdminProfileForm
-from django.contrib.auth.models import User
-from .models import Passenger, FAQ
-from django.db.models import Q
-from decimal import Decimal
-import uuid, pytz
-from .models import (Train, FAQ, Notification, Feedback,
-    Passenger, Hotel, Taxi, Booking, Ticket, HotelBooking, Payment, TaxiBooking
+from .models import (
+    Train, FAQ, Notification, Feedback, Passenger,
+    Hotel, Taxi, Booking, Ticket, HotelBooking, Payment, TaxiBooking
 )
+from django.db.models import Q
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
 def is_admin(user):
     return user.is_superuser
+
+
 @never_cache
 def registration(request):
     if request.method == "POST":
@@ -51,7 +50,11 @@ def registration(request):
         confirm_email = request.POST.get("confirm_email")
 
         if Passenger.objects.filter(email=email).exists():
-            messages.error(request, "Email already exists.")
+            messages.error(request, "Email already exists. Please login or use a different email.")
+            return redirect('registration')
+
+        if Passenger.objects.filter(mobile=mobile).exists():
+            messages.error(request, "Mobile number already exists. Please login or use a different number.")
             return redirect('registration')
 
         if email != confirm_email:
@@ -66,7 +69,8 @@ def registration(request):
             'email': email,
             'cnic': cnic,
             'password': password,
-            'otp': otp_code
+            'otp': otp_code,
+            'otp_sent_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 
         subject = 'OTP for Railway Reservation Registration'
@@ -84,12 +88,23 @@ def registration(request):
 
     return render(request, 'user/registration.html')
 
+
 def verify_otp(request):
     session_data = request.session.get('registration_data')
 
     if not session_data:
-        messages.error(request, "Please fill the Registration Form first.")
+        messages.error(request, "Please fill out the Registration Form first.")
         return redirect('registration')
+
+    otp_sent_time_str = session_data.get('otp_sent_time')
+    if otp_sent_time_str:
+        otp_sent_time = datetime.strptime(otp_sent_time_str, '%Y-%m-%d %H:%M:%S')
+        if otp_sent_time.tzinfo is None:
+            otp_sent_time = timezone.make_aware(otp_sent_time)
+
+        if (timezone.now() - otp_sent_time).total_seconds() > 60:
+            messages.error(request, "Your OTP has expired. Please click on the Resend OTP button to get a new one.")
+            return render(request, 'user/verify_otp.html')
 
     if request.method == "POST":
         user_otp = request.POST.get("otp")
@@ -103,22 +118,45 @@ def verify_otp(request):
                 cnic=session_data['cnic'],
             )
             login(request, user)
-            message = f"Hi {user.full_name}, welcome to Railway Reservation System."
             Notification.objects.create(
                 user=user,
-                message=message
+                message=f"Hi {user.full_name}, Welcome to the Railway Reservation System."
             )
 
             request.session.pop('registration_data', None)
-
-            messages.success(request, "Registration successfully completed. Now you can log in.")
+            messages.success(request, "Registration completed successfully. You are now logged in.")
             return redirect('profile')
         else:
-            messages.error(request, "Your OTP does not match. Please enter the correct 6-digit code.")
+            messages.error(request, "Your OTP does not match. Please check the code and try again.")
+            return render(request, 'user/verify_otp.html')
 
     return render(request, 'user/verify_otp.html')
 
-@never_cache
+
+def resend_otp(request):
+    session_data = request.session.get('registration_data')
+    if session_data:
+        new_otp = str(random.randint(100000, 999999))
+        session_data['otp'] = new_otp
+        session_data['otp_sent_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        request.session['registration_data'] = session_data
+
+        subject = 'New OTP for Railway Reservation Registration'
+        message = f'Your new OTP For Registration is : {new_otp}'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [session_data['email']]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            messages.success(request, "Your new OTP has been sent to your provided email.")
+        except Exception as e:
+            messages.error(request, f"Email sending failed: {e}")
+    else:
+        messages.error(request, "Please fill out the registration form first.")
+
+    return redirect('verify_otp')
+
+
 def newlogin(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -1667,7 +1705,6 @@ def book_hotel(request):
                 hotel.available_rooms -= 1
                 hotel.save()
 
-                # Add this code to create a notification
                 Notification.objects.create(
                     user=request.user,
                     message=f"Your hotel booking at {hotel.hotel_name} has been successfully completed."
@@ -1723,15 +1760,24 @@ def cancel_hotel_booking(request, booking_id):
     if request.method == 'POST':
         try:
             booking = get_object_or_404(HotelBooking, id=booking_id)
+            
             booking.status = 'cancelled'
             booking.save()
+            
+            user = booking.user  
+            message = f"Your hotel booking at {booking.hotel.hotel_name} has been successfully cancelled."
+            
+            Notification.objects.create(user=user, message=message)
+            
             return JsonResponse({'success': True, 'message': 'Reservation cancelled successfully.'})
+        
         except HotelBooking.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Booking not found.'}, status=404)
+        
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
-
 
 # ====================================================================================
 

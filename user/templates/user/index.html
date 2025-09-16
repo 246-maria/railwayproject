@@ -293,15 +293,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <script src="{% static 'js/index.js'%}"></script>
 
-<!-- Naya script yahan shuru hota hai -->
 <script>
-    // 5 seconds ke baad feedback messages ko hata denge.
     setTimeout(function() {
         const messages = document.querySelector('.feedback-messages');
         if (messages) {
             messages.style.display = 'none';
         }
-    }, 5000); // 5000 milliseconds = 5 seconds
+    }, 5000); 
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
 </script>
 
 </body>

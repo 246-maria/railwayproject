@@ -279,6 +279,14 @@
       document.getElementById('update-travel-date').min = todayFormatted;
       document.getElementById('update-travel-date').max = oneMonthFormatted;
     });
+    window.onload = function() {
+        if (performance.navigation.type === 1) {
+        } else {
+            setTimeout(function() {
+                location.reload();
+            }, 100); 
+        }
+    }
   </script>
 </body>
 </html>
