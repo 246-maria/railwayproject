@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{% static 'favicon.ico' %}">
@@ -35,6 +36,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -89,12 +91,23 @@
             position: relative;
         }
 
+        /* Styling for the password toggle checkbox/box */
         .password-toggle-box {
             position: absolute;
             right: 10px;
             top: 50%;
+            /* Adjusted for better alignment if using input:checkbox */
             transform: translateY(-50%);
+            width: 20px;
+            /* Make it easily clickable */
+            height: 20px;
             cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Adjust input margin for checkboxes to prevent overlap */
+        .toggle-button-container input[type="password"] {
+            padding-right: 13px;
         }
 
         button {
@@ -158,6 +171,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="form-container">
         <h2>
@@ -166,21 +180,24 @@
         </h2>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="message {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div
+            class="message {% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
 
         <form method="post" action="{% url 'update_profile' %}">
             {% csrf_token %}
-            
-            <label>Full Name:</label>
-            <input type="text" name="full_name" value="{{ user.full_name }}" placeholder="Enter your full name" required>
 
+            <label>Full Name:</label>
+            <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}"
+                placeholder="Enter your full name" required>
+            <div id="full-name-error" class="error-message"></div>
             <label>Mobile No:</label>
-            <input type="text" id="mobile" name="mobile" value="{{ user.mobile }}" placeholder="03XXXXXXXXX" maxlength="11">
+            <input type="text" id="mobile" name="mobile" value="{{ user.mobile }}" placeholder="03XXXXXXXXX"
+                maxlength="11">
             <div id="mobile-error" class="error-message"></div>
 
             <label>Email:</label>
@@ -196,12 +213,14 @@
                 <input type="password" id="password" name="password" placeholder="New password">
                 <input type="checkbox" id="togglePassword" class="password-toggle-box">
             </div>
+            <div id="password-error" class="error-message"></div>
 
             <div class="toggle-button-container">
                 <label for="confirmPassword">Confirm Password:</label>
                 <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
                 <input type="checkbox" id="toggleConfirmPassword" class="password-toggle-box">
             </div>
+            <div id="confirm-password-error" class="error-message"></div>
 
             <button type="submit">Update Profile</button>
 
@@ -212,16 +231,18 @@
     </div>
 
     <script>
-        document.getElementById('togglePassword').addEventListener('change', function() {
+        document.getElementById('togglePassword').addEventListener('change', function () {
             const passwordInput = document.getElementById('password');
             passwordInput.type = this.checked ? 'text' : 'password';
         });
 
-        document.getElementById('toggleConfirmPassword').addEventListener('change', function() {
+        document.getElementById('toggleConfirmPassword').addEventListener('change', function () {
             const confirmPasswordInput = document.getElementById('confirmPassword');
             confirmPasswordInput.type = this.checked ? 'text' : 'password';
         });
 
+        const fullNameInput = document.getElementById('full_name');
+        const fullNameError = document.getElementById('full-name-error');
         const mobileInput = document.getElementById('mobile');
         const mobileError = document.getElementById('mobile-error');
         const emailInput = document.getElementById('email');
@@ -233,17 +254,34 @@
         const passwordError = document.getElementById('password-error');
         const confirmPasswordError = document.getElementById('confirm-password-error');
 
-        // CNIC auto-formatting logic
-        cnicInput.addEventListener('input', function() {
-            let value = this.value.replace(/-/g, ''); // Remove existing hyphens
+
+        function validateFullName() {
+            const nameRegex = /^[A-Za-z\s]+$/;
+
+            if (fullNameInput.value.trim() !== '' && !nameRegex.test(fullNameInput.value.trim())) {
+                fullNameError.textContent = "Full Name must only contain letters and spaces.";
+                return false;
+            } else {
+                fullNameError.textContent = "";
+                return true;
+            }
+        }
+
+        fullNameInput.addEventListener('blur', validateFullName);
+
+
+        cnicInput.addEventListener('input', function () {
+            let value = this.value.replace(/-/g, ''); 
             let formattedValue = '';
-            
+
+            value = value.substring(0, 13);
+
             if (value.length > 5) {
                 formattedValue = value.substring(0, 5) + '-' + value.substring(5, 12);
             } else {
                 formattedValue = value;
             }
-            
+
             if (value.length > 12) {
                 formattedValue += '-' + value.substring(12, 13);
             }
@@ -251,12 +289,14 @@
             this.value = formattedValue;
         });
 
-        // Validation for form submission
         const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function (e) {
             let isValid = true;
-            
-            // Mobile Validation
+
+            if (!validateFullName()) {
+                isValid = false;
+            }
+
             const mobileRegex = /^03\d{9}$/;
             if (mobileInput.value && !mobileRegex.test(mobileInput.value)) {
                 mobileError.textContent = "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX).";
@@ -265,7 +305,6 @@
                 mobileError.textContent = "";
             }
 
-            // Email Validation
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             if (emailInput.value && !emailRegex.test(emailInput.value)) {
                 emailError.textContent = "Please enter a valid email address (e.g., abc@example.com).";
@@ -274,7 +313,6 @@
                 emailError.textContent = "";
             }
 
-            // CNIC Validation (with hyphens)
             const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
             if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
                 cnicError.textContent = "Please enter CNIC in the format 00000-0000000-0.";
@@ -282,9 +320,9 @@
             } else {
                 cnicError.textContent = "";
             }
-            
-            // Password Validation
+
             if (passwordInput.value || confirmPasswordInput.value) {
+
                 if (passwordInput.value !== confirmPasswordInput.value) {
                     confirmPasswordError.textContent = "Passwords do not match.";
                     isValid = false;
@@ -292,57 +330,64 @@
                     confirmPasswordError.textContent = "";
                 }
 
-                const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
-                if (!passwordRegex.test(passwordInput.value)) {
-                    passwordError.textContent = 'Password must be 8-25 characters, with uppercase, number, and a special character.';
-                    isValid = false;
-                } else {
-                    passwordError.textContent = "";
+                if (passwordInput.value) {
+                    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
+                    if (!passwordRegex.test(passwordInput.value)) {
+                        passwordError.textContent = 'Password must be 8-25 characters, with uppercase, number, and a special character.';
+                        isValid = false;
+                    } else {
+                        passwordError.textContent = "";
+                    }
                 }
             }
 
             if (!isValid) {
-                e.preventDefault(); // Stop the form from submitting
+                e.preventDefault(); 
             }
         });
 
-        // Re-added the blur event listeners for live validation
-        mobileInput.addEventListener('blur', function() {
+        mobileInput.addEventListener('blur', function () {
             const mobileRegex = /^03\d{9}$/;
             mobileError.textContent = this.value && !mobileRegex.test(this.value)
                 ? "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX)." : "";
         });
 
-        emailInput.addEventListener('blur', function() {
+        emailInput.addEventListener('blur', function () {
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             emailError.textContent = this.value && !emailRegex.test(this.value)
                 ? "Please enter a valid email address (e.g., abc@example.com)." : "";
         });
 
-        cnicInput.addEventListener('blur', function() {
+        cnicInput.addEventListener('blur', function () {
             const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
             cnicError.textContent = this.value && !cnicRegex.test(this.value)
                 ? "Please enter CNIC in the format 00000-0000000-0." : "";
         });
 
-        passwordInput.addEventListener('blur', function() {
+        passwordInput.addEventListener('blur', function () {
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
             passwordError.textContent = this.value && !passwordRegex.test(this.value)
                 ? 'Password must be 8-25 characters, with uppercase, number, and a special character.' : "";
         });
 
-        confirmPasswordInput.addEventListener('blur', function() {
-            confirmPasswordError.textContent = this.value && this.value !== passwordInput.value
-                ? "Passwords do not match." : "";
+        confirmPasswordInput.addEventListener('blur', function () {
+            if (confirmPasswordInput.value) {
+                confirmPasswordError.textContent = this.value !== passwordInput.value
+                    ? "Passwords do not match." : "";
+            } else {
+                confirmPasswordError.textContent = "";
+            }
         });
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
+
+        window.onload = function () {
+            if (performance.navigation.type === 1) {
+            } else {
+                setTimeout(function () {
+                    location.reload();
+                }, 100);
+            }
         }
-    }
     </script>
 </body>
+
 </html>

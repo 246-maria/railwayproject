@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{% static 'favicon.ico' %}">
@@ -27,7 +28,7 @@
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
         h2 {
@@ -72,16 +73,28 @@
             padding: 0.5rem 1rem;
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease-in-out;
         }
 
         input:focus,
         textarea:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
             border-color: #3b82f6;
         }
+
+        .input-error {
+            border-color: #ef4444 !important;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            height: 1em;
+        }
+
 
         textarea {
             min-height: 150px;
@@ -102,7 +115,8 @@
         button:hover {
             background-color: lightgreen;
         }
-        p{
+
+        p {
             color: black;
             font-size: medium;
         }
@@ -115,31 +129,35 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
-        Contact Us <p>(Feel Free to reach us)</p></h2>
+            Contact Us <p>(Feel Free to reach us)</p>
+        </h2>
 
         {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
                 {% endfor %}
-            </ul>
+        </ul>
         {% endif %}
 
-        <form method="post" action="{% url 'contact_us' %}">
+        <form method="post" action="{% url 'contact_us' %}" novalidate>
             {% csrf_token %}
             <div>
                 <label for="name">Your Name:</label>
                 <input type="text" id="name" name="name" required>
+                <div id="name-error" class="error-message"></div>
             </div>
 
             <div>
                 <label for="email">Your Email:</label>
                 <input type="email" id="email" name="email" required>
+                <div id="email-error" class="error-message"></div>
             </div>
 
             <div>
@@ -155,15 +173,89 @@
             <button type="submit">Send Message</button>
         </form>
     </div>
+
     <script>
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
+        function validateField(inputElement) {
+            const value = inputElement.value.trim();
+            const errorDisplay = document.getElementById(inputElement.id + '-error');
+            let errorMessage = '';
+            let isValid = true;
+
+            if (inputElement.hasAttribute('required') && value === '') {
+                errorMessage = 'This field cannot be left empty.';
+                isValid = false;
+            }
+
+            else if (inputElement.id === 'name') {
+                const namePattern = /^[A-Z][a-zA-Z\s]{2,}$/;
+
+                if (value.length > 0 && value.length < 3 && /^[A-Za-z\s]+$/.test(value)) {
+                    errorMessage = 'Name must be at least 3 characters long.';
+                    isValid = false;
+                }
+                else if (!namePattern.test(value)) {
+                    errorMessage = 'Name must start with a capital letter and contain only letters and spaces.';
+                    isValid = false;
+                }
+            }
+
+            else if (inputElement.id === 'email') {
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(value)) {
+                    errorMessage = 'Please enter a valid email address (e.g., example@domain.com).';
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                inputElement.classList.remove('input-error');
+                if (errorDisplay) errorDisplay.textContent = '';
+            } else {
+                inputElement.classList.add('input-error');
+                if (errorDisplay) errorDisplay.textContent = errorMessage;
+            }
+
+            return isValid;
         }
-    }
-</script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            const fieldsToValidate = document.querySelectorAll('#name, #email');
+
+            fieldsToValidate.forEach(field => {
+                field.addEventListener('blur', () => {
+                    validateField(field);
+                });
+
+                field.addEventListener('input', () => {
+                    validateField(field);
+                });
+            });
+
+            form.addEventListener('submit', function (event) {
+                let formValid = true;
+
+                const allRequiredFields = document.querySelectorAll('input[required], textarea[required]');
+
+                allRequiredFields.forEach(field => {
+                    if (field.id === 'name' || field.id === 'email') {
+                        if (!validateField(field)) {
+                            formValid = false;
+                        }
+                    }
+                    else if (!field.checkValidity()) {
+                        field.reportValidity();
+                        formValid = false;
+                    }
+                });
+
+                if (!formValid) {
+                    event.preventDefault();
+                    alert('Please correct all required fields before submitting.');
+                }
+            });
+        });
+
+    </script>
 </body>
+
 </html>

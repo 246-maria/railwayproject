@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cancel Ticket</title>
-    
+
     <style>
         body {
             font-family: 'Times New Roman', Times, serif;
@@ -21,46 +22,54 @@
             align-items: center;
             min-height: 100vh;
         }
+
         .card-container {
             width: 100%;
             max-width: 400px;
-            
         }
+
         .card {
             background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .title-container {
             display: flex;
             align-items: center;
             justify-content: left;
             gap: 10px;
         }
+
         .logo {
             width: 50px;
             height: auto;
             margin-right: 10px;
             padding-top: 3px;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             font-weight: bold;
             display: block;
             margin-bottom: 5px;
         }
+
         input {
             width: 100%;
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #aaa;
         }
-        h3{
+
+        h3 {
             color: darkgreen;
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -70,12 +79,13 @@
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
+
         button:hover {
             background: #c9302c;
         }
 
-        /* CSS for Toast Message */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -84,22 +94,32 @@
         }
 
         .toast-message {
-            background-color: #28a745; /* Green for success */
+            background-color: #28a745;
             color: white;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            margin-bottom: 10px;
         }
+
         .toast-message.show {
             opacity: 1;
         }
+
         .toast-message.error {
-            background-color: #dc3545; /* Red for error */
+            background-color: #dc3545;
+        }
+
+        .validation-error {
+            color: red;
+            font-size: 0.8em;
+            margin-top: 5px;
         }
     </style>
 </head>
+
 <body>
     <div class="card-container">
         <div class="card">
@@ -108,11 +128,12 @@
                 <h3 class="card-title">Enter Booking ID to Cancel</h3>
             </div>
             <hr>
-            <form method="post" action="{% url 'cancel_ticket' %}">
+            <form method="post" id="cancelForm" action="{% url 'cancel_ticket' %}">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="booking_id">Booking ID</label>
-                    <input type="text" id="booking_id" name="booking_id" required>
+                    <input type="number" id="booking_id" name="booking_id" required min="1" max="300">
+                    <div id="booking-id-error" class="validation-error"></div>
                 </div>
                 <button type="submit">Cancel Ticket</button>
             </form>
@@ -121,36 +142,85 @@
 
     <div class="toast-container">
         {% if messages %}
-            {% for message in messages %}
-                <div class="toast-message {% if message.tags == 'error' %}error{% endif %}" id="toast-message-{{ forloop.counter }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="toast-message {% if message.tags == 'error' %}error{% endif %}"
+            id="toast-message-{{ forloop.counter }}">
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const toasts = document.querySelectorAll('.toast-message');
             toasts.forEach((toast, index) => {
                 setTimeout(() => {
                     toast.classList.add('show');
-                }, index * 500); 
-                
+                }, index * 500);
+
                 setTimeout(() => {
                     toast.classList.remove('show');
                 }, 5000 + index * 500);
             });
+
+            const form = document.getElementById('cancelForm');
+            const bookingInput = document.getElementById('booking_id');
+            const errorDiv = document.getElementById('booking-id-error');
+
+            const MAX_VALUE = 300;
+            const MIN_VALUE = 1;
+
+            bookingInput.addEventListener('input', function () {
+                const value = parseInt(this.value, 10);
+
+                if (value > MAX_VALUE) {
+                    this.value = MAX_VALUE;
+                    errorDiv.textContent = `Booking ID cannot be greater than ${MAX_VALUE}.`;
+                } else if (value < MIN_VALUE && this.value !== "") {
+                    this.value = MIN_VALUE;
+                    errorDiv.textContent = `Booking ID must be at least ${MIN_VALUE}.`;
+                } else {
+                    errorDiv.textContent = '';
+                }
+            });
+
+            function validateBookingId() {
+                if (!bookingInput.checkValidity()) {
+                    if (bookingInput.value.trim() === '') {
+                        errorDiv.textContent = 'Booking ID is required.';
+                    } else if (parseInt(bookingInput.value, 10) > MAX_VALUE) {
+                        errorDiv.textContent = `Booking ID cannot be greater than ${MAX_VALUE}.`;
+                    } else if (parseInt(bookingInput.value, 10) < MIN_VALUE) {
+                        errorDiv.textContent = `Booking ID must be a positive number.`;
+                    } else {
+                        errorDiv.textContent = 'Please enter a valid whole number.';
+                    }
+                    return false;
+                }
+
+                errorDiv.textContent = '';
+                return true;
+            }
+
+            bookingInput.addEventListener('blur', validateBookingId);
+
+            form.addEventListener('submit', function (e) {
+                if (!validateBookingId()) {
+                    e.preventDefault();
+                }
+            });
         });
 
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
+        window.onload = function () {
+            if (performance.navigation.type === 1) {
+            } else {
+                setTimeout(function () {
+                    location.reload();
+                }, 100);
+            }
         }
-    }
     </script>
 </body>
+
 </html>

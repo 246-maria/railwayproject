@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Upgrade Admin Profile</title>
     <link rel="icon" href="{% static 'favicon.ico' %}">
@@ -14,65 +15,65 @@
         }
     </style>
 </head>
-<body>
-<div class="update-container">
-    <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-        <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-             style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
-    Update Admin Profile</h2>
 
-    {% if messages %}
+<body>
+    <div class="update-container">
+        <h2 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
+                style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;">
+            Update Admin Profile
+        </h2>
+
+        {% if messages %}
         <div class="messages">
             {% for message in messages %}
-                <div class="alert {{ message.tags }}">
-                    {{ message }}
-                </div>
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
             {% endfor %}
         </div>
-    {% endif %}
+        {% endif %}
 
-    <form method="POST">
-        {% csrf_token %}
-        <label>Full Name:</label>
-        <input type="text" name="full_name" value="{{ user.full_name }}" required maxlength="25">
-        <div id="full-name-error" class="error-message"></div>
+        <form method="POST">
+            {% csrf_token %}
+            <label>Full Name:</label>
+            <input type="text" name="full_name" value="{{ user.full_name }}" required maxlength="25">
+            <div id="full-name-error" class="error-message"></div>
 
-        <label>Mobile No:</label>
-        <input type="text" id="mobile" name="mobile" value="{{ mobile}}" placeholder="03XXXXXXXXX" maxlength="11">
-        <div id="mobile-error" class="error-message"></div>
+            <label>Mobile No:</label>
+            <input type="text" id="mobile" name="mobile" value="{{ mobile}}" placeholder="03XXXXXXXXX" maxlength="11">
+            <div id="mobile-error" class="error-message"></div>
 
-        <label>CNIC:</label>
-        <input type="text" id="cnic" name="cnic" value="{{ cnic}}" placeholder="00000-0000000-0">
-        <div id="cnic-error" class="error-message"></div>
+            <label>CNIC:</label>
+            <input type="text" id="cnic" name="cnic" value="{{ cnic}}" placeholder="00000-0000000-0">
+            <div id="cnic-error" class="error-message"></div>
 
-        <label>Email:</label>
-        <input type="email" id="email" name="email" value="{{ user.email }}" required placeholder="abc@example.com">
-        <div id="email-error" class="error-message"></div>
+            <label>Email:</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" required placeholder="abc@example.com">
+            <div id="email-error" class="error-message"></div>
 
-        <div style="position: relative; margin-top: 10px;">
-            <label for="password">New Password (Optional):</label>
-            <input type="password" id="password" name="password"
-                placeholder="Enter new password"
-                style="width: 91%; padding-right: 40px;">
-            <input type="checkbox" onclick="togglePassword('password')"
-                style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
-        </div>
-        <div id="password-error" class="error-message"></div>
+            <div style="position: relative; margin-top: 10px;">
+                <label for="password">New Password (Optional):</label>
+                <input type="password" id="password" name="password" placeholder="Enter new password"
+                    style="width: 91%; padding-right: 40px;">
+                <input type="checkbox" onclick="togglePassword('password')"
+                    style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
+            </div>
+            <div id="password-error" class="error-message"></div>
 
-        <div style="position: relative; margin-top: 10px;">
-            <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password"
-                placeholder="Confirm new password"
-                style="width: 91%; padding-right: 40px;">
-            <input type="checkbox" onclick="togglePassword('confirm_password')"
-                style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
-        </div>
-        <div id="confirm-password-error" class="error-message"></div>
+            <div style="position: relative; margin-top: 10px;">
+                <label for="confirm_password">Confirm Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password"
+                    style="width: 91%; padding-right: 40px;">
+                <input type="checkbox" onclick="togglePassword('confirm_password')"
+                    style="position: absolute; left: 190px; top: 61%; transform: translateY(-50%);">
+            </div>
+            <div id="confirm-password-error" class="error-message"></div>
 
-        <button type="submit">Update Profile</button>
-        <p>Back to <a href="{% url 'adminpanel' %}" class="back-link">Admin Panel</a></p>
-    </form>
-</div>
+            <button type="submit">Update Profile</button>
+            <p>Back to <a href="{% url 'adminpanel' %}" class="back-link">Admin Panel</a></p>
+        </form>
+    </div>
 </body>
 
 <script>
@@ -82,20 +83,40 @@
     }
 
     const form = document.querySelector('form');
+    const fullNameInput = document.querySelector('input[name="full_name"]');
     const mobileInput = document.getElementById('mobile');
     const cnicInput = document.getElementById('cnic');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirm_password');
 
+    const fullNameError = document.getElementById('full-name-error');
     const mobileError = document.getElementById('mobile-error');
     const cnicError = document.getElementById('cnic-error');
     const emailError = document.getElementById('email-error');
     const passwordError = document.getElementById('password-error');
     const confirmPasswordError = document.getElementById('confirm-password-error');
 
-    form.addEventListener('submit', function(e) {
+    function validateFullName() {
+        const nameRegex = /^[A-Za-z\s]+$/;
+
+        if (fullNameInput.value.trim() !== '' && !nameRegex.test(fullNameInput.value.trim())) {
+            fullNameError.textContent = "Full Name must only contain letters and spaces.";
+            return false;
+        } else {
+            fullNameError.textContent = "";
+            return true;
+        }
+    }
+
+    fullNameInput.addEventListener('blur', validateFullName);
+
+    form.addEventListener('submit', function (e) {
         let isValid = true;
+
+        if (!validateFullName()) {
+            isValid = false;
+        }
 
         const mobileRegex = /^03\d{9}$/;
         if (mobileInput.value && !mobileRegex.test(mobileInput.value)) {
@@ -106,7 +127,6 @@
         }
 
         const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-        // CNIC validation logic updated for the new format
         if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
             cnicError.textContent = "Please enter a valid CNIC in the format 00000-0000000-0.";
             isValid = false;
@@ -128,8 +148,7 @@
         } else {
             confirmPasswordError.textContent = "";
         }
-        
-        // New password validation
+
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
         if (passwordInput.value && !passwordRegex.test(passwordInput.value)) {
             passwordError.textContent = "Password must be 8-25 characters with uppercase, number, and special character.";
@@ -143,7 +162,7 @@
         }
     });
 
-    mobileInput.addEventListener('blur', function() {
+    mobileInput.addEventListener('blur', function () {
         const mobileRegex = /^03\d{9}$/;
         if (mobileInput.value && !mobileRegex.test(mobileInput.value)) {
             mobileError.textContent = "Please enter a valid 11-digit mobile number (e.g., 03XXXXXXXXX).";
@@ -152,10 +171,12 @@
         }
     });
 
-    // CNIC input event listener for auto-formatting
-    cnicInput.addEventListener('input', function() {
-        let value = cnicInput.value.replace(/-/g, ''); // Remove existing hyphens
+    cnicInput.addEventListener('input', function () {
+        let value = cnicInput.value.replace(/-/g, ''); 
         let formattedValue = '';
+
+        value = value.substring(0, 13);
+
         if (value.length > 5) {
             formattedValue = value.substring(0, 5) + '-' + value.substring(5, 12);
         } else {
@@ -167,8 +188,7 @@
         cnicInput.value = formattedValue;
     });
 
-    // `blur` event listener for CNIC to validate the formatted input
-    cnicInput.addEventListener('blur', function() {
+    cnicInput.addEventListener('blur', function () {
         const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
         if (cnicInput.value && !cnicRegex.test(cnicInput.value)) {
             cnicError.textContent = "Please enter a valid CNIC in the format 00000-0000000-0.";
@@ -177,7 +197,7 @@
         }
     });
 
-    emailInput.addEventListener('blur', function() {
+    emailInput.addEventListener('blur', function () {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(emailInput.value)) {
             emailError.textContent = "Please enter a valid email address (e.g., abc@example.com).";
@@ -185,9 +205,8 @@
             emailError.textContent = "";
         }
     });
-    
-    // Password validation on blur
-    passwordInput.addEventListener('blur', function() {
+
+    passwordInput.addEventListener('blur', function () {
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,25}$/;
         if (passwordInput.value && !passwordRegex.test(passwordInput.value)) {
             passwordError.textContent = "Password must be 8-25 characters with uppercase, number, and special character.";
@@ -195,21 +214,23 @@
             passwordError.textContent = "";
         }
     });
-    
-    confirmPasswordInput.addEventListener('blur', function() {
+
+    confirmPasswordInput.addEventListener('blur', function () {
         if (confirmPasswordInput.value !== passwordInput.value) {
             confirmPasswordError.textContent = "Passwords do not match.";
         } else {
             confirmPasswordError.textContent = "";
         }
     });
-    window.onload = function() {
+
+    window.onload = function () {
         if (performance.navigation.type === 1) {
         } else {
-            setTimeout(function() {
+            setTimeout(function () {
                 location.reload();
-            }, 100); 
+            }, 100);
         }
     }
 </script>
+
 </html>

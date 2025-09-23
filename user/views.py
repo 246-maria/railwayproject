@@ -325,16 +325,40 @@ def trainmanagement(request):
     trains = Train.objects.all()
     return render(request, 'user/trainmanagement.html', {'trains': trains })
 
+MAX_SEATS = 500
+MIN_SEATS = 1
+IN_SEATS = 1
+
+
+def trainmanagement(request):
+    trains = Train.objects.all() 
+    return render(request, 'user/trainmanagement.html', {'trains': trains })
+
+import re 
 def add_train(request):
+  
     if request.method == "POST":
         train_name = request.POST.get('train_name')
+        if not re.match(r'^[A-Za-z\s]+$', train_name):
+            messages.error(request, "Train Name can only contain letters and spaces.")
+            return redirect('trainmanagement')
         train_number = request.POST.get('train_number', '').strip()
         from_station = request.POST.get('from_station')
         to_station = request.POST.get('to_station')
         route = request.POST.get('route')
         classes = request.POST.get('classes', '')
-        total_seats = int (request.POST.get("total_seats"))
         fare = request.POST.get('Fare')
+
+        total_seats_str = request.POST.get("total_seats")
+        try:
+            total_seats = int(total_seats_str)
+        except (ValueError, TypeError):
+            messages.error(request, "Total seats must be a valid number.")
+            return redirect('trainmanagement')
+
+        if not (MIN_SEATS <= total_seats <= MAX_SEATS):
+            messages.error(request, f"Total seats must be between {MIN_SEATS} and {MAX_SEATS}.")
+            return redirect('trainmanagement')
 
         travel_date_str = request.POST.get('travel_date')
         travel_date = None
@@ -347,6 +371,7 @@ def add_train(request):
 
         departure_time = request.POST.get('departure_time')
         arrival_time = request.POST.get('arrival_time')
+        
         Train.objects.create(
             train_name=train_name,
             train_number=train_number,
@@ -358,20 +383,28 @@ def add_train(request):
             departure_time=departure_time,
             arrival_time=arrival_time,
             total_seats=total_seats,
-            seats_available=total_seats,
+            seats_available=total_seats, 
             Fare=fare
         )
 
         messages.success(request, f"Train {train_number} added successfully!")
         return redirect('trainmanagement')
+    
     trains = Train.objects.all()
     context = {'trains': trains}
     return render(request, 'user/trainmanagement.html', context)
+
+# ---
+
 @staff_member_required
 def adminpanel(request):
+    
     context = {'user': request.user}
     return render(request, 'user/adminpanel.html', context)
+
+
 def update_train(request):
+
     if request.method == 'POST':
         train_number = request.POST.get('train_number', '').strip()
         if not train_number:
@@ -379,14 +412,36 @@ def update_train(request):
             return redirect('trainmanagement')
 
         train = get_object_or_404(Train, train_number=train_number)
+
+        new_total_seats_str = request.POST.get('total_seats')
+        
+        if new_total_seats_str:
+            try:
+                new_total_seats = int(new_total_seats_str)
+            except ValueError:
+                messages.error(request, "Total seats must be a valid number.")
+                return redirect('trainmanagement')
+
+            if not (MIN_SEATS <= new_total_seats <= MAX_SEATS):
+                messages.error(request, f"Total seats must be between {MIN_SEATS} and {MAX_SEATS}.")
+                return redirect('trainmanagement')
+            booked_seats = train.total_seats - train.seats_available
+
+            train.total_seats = new_total_seats
+            train.seats_available = max(0, new_total_seats - booked_seats)
+
+            train.seats_available = min(train.seats_available, new_total_seats)
+
         train.train_name = request.POST.get('train_name', train.train_name)
         train.from_station = request.POST.get('from_station', train.from_station)
         train.to_station = request.POST.get('to_station', train.to_station)
         train.route = request.POST.get('route', train.route)
         train.Fare = request.POST.get('Fare', train.Fare)
-        train_classes = request.POST.get('train_class')
+        
+        train_classes = request.POST.get('classes') 
         if train_classes:
             train.classes = train_classes
+
         travel_date_str = request.POST.get('travel_date')
         if travel_date_str:
             try:
@@ -394,13 +449,15 @@ def update_train(request):
             except ValueError:
                 messages.error(request, "Invalid date format (yyyy-mm-dd).")
                 return redirect('trainmanagement')
+                
         train.departure_time = request.POST.get('departure_time', train.departure_time)
         train.arrival_time = request.POST.get('arrival_time', train.arrival_time)
+        
         train.save()
-        messages.success(request, f" Train {train_number} updated successfully!")
+        messages.success(request, f"Train {train_number} updated successfully!")
         return redirect('trainmanagement')
 
-    return HttpResponse(" Invalid Request")
+    return HttpResponse("Invalid Request")
 
 def delete_train(request):
     if request.method == "POST":
@@ -429,6 +486,8 @@ def get_trains(request):
 def faremanagement(request):
     trains = Train.objects.all()
     return render(request, 'user/faremanagement.html', {'trains': trains})
+
+
 def add_fare(request):
     if request.method == "POST":
         train_number = request.POST.get("train")
@@ -440,34 +499,42 @@ def add_fare(request):
 
         try:
             train = Train.objects.get(train_number=train_number)
+            
             train.Fare = Fare
             train.economy_fare = economy_fare
             train.business_fare = business_fare
             train.ac_standard_fare = ac_standard_fare
             train.ac_sleeper_fare = ac_sleeper_fare
+            
             train.save()
-            message = "Fare added successfully!"
+            
+            messages.success(request, f"Fares for Train {train_number} added successfully!")
+            
         except Train.DoesNotExist:
-            message = "Train not found."
-
-    trains = Train.objects.all()
-    return render(request, "user/faremanagement.html", {"trains": trains, "message": message})
-
+            messages.error(request, f"Error: Train with number {train_number} not found.")
+        
+        return redirect('faremanagement')
+        
+    return redirect('faremanagement') 
 
 def update_fare(request):
+
     if request.method == "POST":
         train_number = request.POST.get('train')
+    
         train = get_object_or_404(Train, train_number=train_number)
         train.Fare = request.POST.get('fare') or None
         train.economy_fare = request.POST.get('economy_fare') or None
         train.business_fare = request.POST.get('business_fare') or None
         train.ac_standard_fare = request.POST.get('ac_standard_fare') or None
         train.ac_sleeper_fare = request.POST.get('ac_sleeper_fare') or None
+        
         train.save()
+        
+        messages.success(request, f"Fares for Train {train_number} updated successfully!")
+        
         return redirect('faremanagement')
-
-    return render(request, 'user/faremanagement.html')
-@never_cache
+    return redirect('faremanagement') @never_cache
 def profile(request):
     if request.user.is_authenticated:
         user = request.user
@@ -1284,7 +1351,7 @@ def refund_page(request, booking_id, refund_amount):
                 status='refund'
             )
 
-            message = f"Aapki booking (ID: {booking.id}) ka refund process ho gaya hai. Aapko {refund_amount} PKR wapis kar diye gaye hain."
+            message = f"Your booking (ID: {booking.id}) has been refunded. An amount of {refund_amount} PKR has been returned to you."
             Notification.objects.create(user=booking.user, message=message)
 
 

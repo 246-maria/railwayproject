@@ -2,12 +2,14 @@
 {% load user_filters %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="{% static 'favicon.ico' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Train Management</title>
   <link rel="stylesheet" href="{% static 'css/trainmanagement.css' %}" />
+
   <style>
     #toast-messages {
       position: fixed;
@@ -15,6 +17,7 @@
       right: 10px;
       z-index: 9999;
     }
+
     .toast {
       background-color: green;
       color: white;
@@ -27,13 +30,33 @@
       font-family: Arial, sans-serif;
       min-width: 200px;
     }
+
+    .form-section label,
+    .form-section input,
+    .form-section select {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      box-sizing: border-box;
+    }
+
+    .form-section input[type="text"],
+    .form-section input[type="number"],
+    .form-section input[type="date"],
+    .form-section input[type="time"],
+    .form-section select {
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h2 style="display: flex; align-items: center; gap: 10px;">
-      <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
-        style="width: 50px; height: auto; padding-top: 3px;" />
+      <img src="{% static 'images/logo.jpg' %}" alt="My Logo" style="width: 50px; height: auto; padding-top: 3px;" />
       TRAIN MANAGEMENT (ADDING, UPDATING & DELETING)
     </h2>
 
@@ -43,6 +66,7 @@
       <div class="toast">{{ message }}</div>
       {% endfor %}
     </div>
+
     <script>
       setTimeout(() => {
         const toastContainer = document.getElementById('toast-messages');
@@ -113,63 +137,47 @@
       <form method="POST" action="{% url 'add_train' %}">
         {% csrf_token %}
         <label>Train Name:</label>
-        <input type="text" name="train_name" required maxlength="25" />
+        <input type="text" name="train_name" required maxlength="25" oninput="validateTrainName(this)"
+          pattern="[A-Za-z\s]+" title="Name can only contain letters and spaces">
 
         <label>Train Number:</label>
-        <input type="text" name="train_number" required maxlength="10" />
+        <input type="text" name="train_number" required maxlength="5" oninput="validateTrainNumber(this)"
+          pattern="[A-Za-z]{2}[0-9]{3}" title="Must be 2 letters followed by 3 digits (e.g., PK103)">
 
         <label>From Station:</label>
-        <select name="from_station" required>
-          <option value="">--Select--</option>
-          <option value="Rawalpindi">Rawalpindi</option>
-          <option value="Lahore">Lahore</option>
-          <option value="Karachi">Karachi</option>
-          <option value="Islamabad">Islamabad</option>
-          <option value="Peshawar">Peshawar</option>
-          <option value="Multan">Multan</option>
-          <option value="Quetta">Quetta</option>
-          <option value="Faislabad">Faislabad</option>
-          <option value="Hyderabad">Hyderabad</option>
-          <option value="Gujranwala">Gujranwala</option>
-          <option value="Sailkot">Sailkot</option>
-          <option value="Gujrat">Gujrat</option>
-          <option value="Sarghoda">Sarghoda</option>
-          <option value="Bahawalpur">Bahawalpur</option>
-          <option value="Sukhar">Sukhar</option>
-          <option value="Mardan">Mardan</option>
-          <option value="Abbottabad">Abbottabad</option>
-          <option value="Mirpur">Mirpur</option>
-          <option value="Muzaffarabad">Muzaffarabad</option>
-          <option value="Gligit">Gligit</option>
-        </select>
+        <input type="text" name="from_station" required maxlength="30" oninput="validateTrainName(this)"
+          list="station-list" pattern="[A-Za-z\s]+" title="Station name can only contain letters and spaces">
 
         <label>To Station:</label>
-        <select name="to_station" required>
-          <option value="">--Select--</option>
-          <option value="Rawalpindi">Rawalpindi</option>
-          <option value="Lahore">Lahore</option>
-          <option value="Karachi">Karachi</option>
-          <option value="Islamabad">Islamabad</option>
-          <option value="Peshawar">Peshawar</option>
-          <option value="Multan">Multan</option>
-          <option value="Quetta">Quetta</option>
-          <option value="Faislabad">Faislabad</option>
-          <option value="Hyderabad">Hyderabad</option>
-          <option value="Gujranwala">Gujranwala</option>
-          <option value="Sailkot">Sailkot</option>
-          <option value="Gujrat">Gujrat</option>
-          <option value="Sarghoda">Sarghoda</option>
-          <option value="Bahawalpur">Bahawalpur</option>
-          <option value="Sukhar">Sukhar</option>
-          <option value="Mardan">Mardan</option>
-          <option value="Abbottabad">Abbottabad</option>
-          <option value="Mirpur">Mirpur</option>
-          <option value="Muzaffarabad">Muzaffarabad</option>
-          <option value="Gligit">Gligit</option>
-        </select>
+        <input type="text" name="to_station" required maxlength="30" oninput="validateTrainName(this)"
+          list="station-list" pattern="[A-Za-z\s]+" title="Station name can only contain letters and spaces">
+
+        <datalist id="station-list">
+          <option value="Rawalpindi">
+          <option value="Lahore">
+          <option value="Karachi">
+          <option value="Islamabad">
+          <option value="Peshawar">
+          <option value="Multan">
+          <option value="Quetta">
+          <option value="Faislabad">
+          <option value="Hyderabad">
+          <option value="Gujranwala">
+          <option value="Sialkot">
+          <option value="Gujrat">
+          <option value="Sargodha">
+          <option value="Bahawalpur">
+          <option value="Sukkur">
+          <option value="Mardan">
+          <option value="Abbottabad">
+          <option value="Mirpur">
+          <option value="Muzaffarabad">
+          <option value="Gilgit">
+        </datalist>
 
         <label>Route:</label>
-        <input type="text" name="route" required maxlength="25" />
+        <input type="text" name="route" required maxlength="25" oninput="validateTrainName(this)" pattern="[A-Za-z\s]+"
+          title="Route can only contain letters and spaces" />
 
         <label>Available Classes:</label>
         <input type="text" name="classes" placeholder="A,B,C,D" />
@@ -183,8 +191,14 @@
         <label>Arrival Time:</label>
         <input type="time" name="arrival_time" required />
 
+        <label>Fare:</label>
+        <input type="number" name="Fare" min="1" max="3000" required
+          oninput="if(this.value.length === 0) return; if(this.value > 3000) this.value = 3000; if(this.value < 1) this.value = 1;">
+
         <label>Total Seats:</label>
-        <input type="number" name="total_seats" required>
+        <input type="number" name="total_seats" min="10" max="500" required
+          oninput="if(this.value.length === 0) return; if(this.value > 500) this.value = 500; if(this.value < 1) this.value = 1;">
+
 
         {% if error %}
         <p style="color:red;">{{ error }}</p>
@@ -200,39 +214,56 @@
         {% csrf_token %}
 
         <label>Train Number:</label>
-        <select name="train_number" required>
+        <select name="train_number" id="update-train-number-select" required onchange="populateUpdateForm()">
           <option value="">--Select Train Number--</option>
           {% for train in trains %}
-          <option value="{{ train.train_number }}">{{ train.train_number }}</option>
+          <option value="{{ train.train_number }}" data-name="{{ train.train_name|default_if_none:'' }}"
+            data-from="{{ train.from_station|default_if_none:'' }}" data-to="{{ train.to_station|default_if_none:'' }}"
+            data-route="{{ train.route|default_if_none:'' }}" data-classes="{{ train.classes|default_if_none:'' }}"
+            data-date="{{ train.travel_date|date:'Y-m-d'|default_if_none:'' }}"
+            data-dep="{{ train.departure_time|time:'H:i'|default_if_none:'' }}"
+            data-arr="{{ train.arrival_time|time:'H:i'|default_if_none:'' }}" data-fare="{{ train.Fare|default:'' }}"
+            data-seats="{{ train.total_seats|default:0 }}">
+            {{ train.train_name }} ({{ train.train_number }})
+          </option>
           {% endfor %}
         </select>
 
         <label>New Train Name:</label>
-        <input type="text" name="train_name" maxlength="25" />
+        <input type="text" name="train_name" id="update-train-name" maxlength="25" oninput="validateTrainName(this)"
+          pattern="[A-Za-z\s]+" title="Name can only contain letters and spaces" />
 
         <label>New From Station:</label>
-        <input type="text" name="from_station" />
+        <input type="text" name="from_station" id="update-from-station" maxlength="30" oninput="validateTrainName(this)"
+          list="station-list" pattern="[A-Za-z\s]+" title="Station name can only contain letters and spaces" />
 
         <label>New To Station:</label>
-        <input type="text" name="to_station" />
+        <input type="text" name="to_station" id="update-to-station" maxlength="30" oninput="validateTrainName(this)"
+          list="station-list" pattern="[A-Za-z\s]+" title="Station name can only contain letters and spaces" />
 
         <label>New Route:</label>
-        <input type="text" name="route" />
+        <input type="text" name="route" id="update-route" maxlength="25" oninput="validateTrainName(this)"
+          pattern="[A-Za-z\s]+" title="Route can only contain letters and spaces" />
 
         <label>New Train Classes:</label>
-        <input type="text" name="classes" placeholder="A,B,C,D" />
+        <input type="text" name="classes" id="update-classes" placeholder="A,B,C,D" />
 
         <label>New Travel Date:</label>
         <input type="date" name="travel_date" id="update-travel-date" />
 
         <label>New Departure Time:</label>
-        <input type="time" name="departure_time" />
+        <input type="time" name="departure_time" id="update-departure-time" />
 
         <label>New Arrival Time:</label>
-        <input type="time" name="arrival_time" />
+        <input type="time" name="arrival_time" id="update-arrival-time" />
+
+        <label>New Fare:</label>
+        <input type="number" name="Fare" id="update-Fare" min="1" max="3000"
+          oninput="if(this.value.length === 0) return; if(this.value > 3000) this.value = 3000; if(this.value < 1) this.value = 1;" />
 
         <label>Total Seats:</label>
-        <input type="number" name="total_seats" required>
+        <input type="number" name="total_seats" id="update-total-seats" min="10" max="500" required
+          oninput="if(this.value.length === 0) return; if(this.value > 500) this.value = 500; if(this.value < 1) this.value = 1;">
 
         <button type="submit">Update Train</button>
       </form>
@@ -249,13 +280,89 @@
           <option value="{{ train.train_number }}">{{ train.train_number }}</option>
           {% endfor %}
         </select>
-        <button type="submit" class="btn-action delete-btn">Delete Train</button>
+        <button type="submit" class="btn-action delete-btn"
+          onclick="return confirm('Are you sure you want to delete this train?')">Delete Train</button>
       </form>
     </section>
 
+
   </div>
 
+
   <script>
+    function validateTrainName(input) {
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+    }
+
+    function validateTrainNumber(input) {
+      let value = input.value;
+      let cleanedValue = '';
+
+      if (value.length > 5) {
+        value = value.substring(0, 5);
+      }
+
+      for (let i = 0; i < Math.min(2, value.length); i++) {
+        if (/[A-Za-z]/.test(value[i])) {
+          cleanedValue += value[i].toUpperCase();
+        } else {
+          break;
+        }
+      }
+
+      for (let i = 2; i < Math.min(5, value.length); i++) {
+        if (/[0-9]/.test(value[i])) {
+          cleanedValue += value[i];
+        } else {
+          break;
+        }
+      }
+
+      input.value = cleanedValue;
+    }
+
+    function populateUpdateForm() {
+      const selectElement = document.getElementById('update-train-number-select');
+      const selectedOption = selectElement.options[selectElement.selectedIndex];
+
+      const updateTrainName = document.getElementById('update-train-name');
+      const updateFromStation = document.getElementById('update-from-station');
+      const updateToStation = document.getElementById('update-to-station');
+      const updateRoute = document.getElementById('update-route');
+      const updateClasses = document.getElementById('update-classes');
+      const updateTravelDate = document.getElementById('update-travel-date');
+      const updateDepartureTime = document.getElementById('update-departure-time');
+      const updateArrivalTime = document.getElementById('update-arrival-time');
+      const updateFare = document.getElementById('update-Fare');
+      const updateTotalSeats = document.getElementById('update-total-seats');
+
+      if (selectedOption.value === "") {
+        updateTrainName.value = '';
+        updateFromStation.value = '';
+        updateToStation.value = '';
+        updateRoute.value = '';
+        updateClasses.value = '';
+        updateTravelDate.value = '';
+        updateDepartureTime.value = '';
+        updateArrivalTime.value = '';
+        updateFare.value = '';
+        updateTotalSeats.value = '';
+        return;
+      }
+
+      updateTrainName.value = selectedOption.getAttribute('data-name');
+      updateFromStation.value = selectedOption.getAttribute('data-from');
+      updateToStation.value = selectedOption.getAttribute('data-to');
+      updateRoute.value = selectedOption.getAttribute('data-route');
+      updateClasses.value = selectedOption.getAttribute('data-classes');
+      updateTravelDate.value = selectedOption.getAttribute('data-date');
+      updateDepartureTime.value = selectedOption.getAttribute('data-dep');
+      updateArrivalTime.value = selectedOption.getAttribute('data-arr');
+      updateFare.value = selectedOption.getAttribute('data-fare');
+
+      updateTotalSeats.value = selectedOption.getAttribute('data-seats');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const oneMonthFromNow = new Date();
@@ -274,20 +381,19 @@
       const todayFormatted = formatDate(today);
       const oneMonthFormatted = formatDate(oneMonthFromNow);
 
-      document.getElementById('add-travel-date').min = todayFormatted;
-      document.getElementById('add-travel-date').max = oneMonthFormatted;
+      const addDate = document.getElementById('add-travel-date');
+      const updateDate = document.getElementById('update-travel-date');
 
-      document.getElementById('update-travel-date').min = todayFormatted;
-      document.getElementById('update-travel-date').max = oneMonthFormatted;
+      if (addDate) {
+        addDate.min = todayFormatted;
+        addDate.max = oneMonthFormatted;
+      }
+      if (updateDate) {
+        updateDate.min = todayFormatted;
+        updateDate.max = oneMonthFormatted;
+      }
     });
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
-        }
-    }
   </script>
 </body>
+
 </html>

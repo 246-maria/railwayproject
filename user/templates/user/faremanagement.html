@@ -1,21 +1,128 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <title>Fare Management</title>
     <link rel="stylesheet" href="{% static 'css/faremanagement.css' %}">
-</head>
-<body>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        thead {
+            background-color: #f2f2f2;
+        }
+
+        form label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        form input[type="number"],
+        form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        form button {
+            padding: 10px 15px;
+            background-color: darkgreen;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        form button:hover {
+            background-color: green;
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            min-width: 250px;
+            margin-bottom: 10px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: green;
+        }
+
+        .toast.error {
+            background-color: hsl(354, 70%, 54%);
+        }
+
+        .toast.info {
+            background-color: #17a2b8;
+        }
+    </style>
+</head>
+
+<body>
     <div class="container">
         <h2 style="display: flex; align-items: center; justify-content: left; gap: 10px;">
             <img src="{% static 'images/logo.jpg' %}" alt="My Logo"
                 style="width: 50px; height: auto; margin-right: 10px; padding-top: 3px;" />
-        Fare Management</h2>
+            Fare Management
+        </h2>
 
-        <!-- Train Fare List -->
+        <div id="toast-container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="toast {{ message.tags }}" id="toast-{{ forloop.counter }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
         <section class="fare-list">
             <h3>List of Trains with Fares</h3>
             <table border="1" cellpadding="8" cellspacing="0">
@@ -35,97 +142,152 @@
                 <tbody>
                     {% for train in trains %}
                     <tr>
-                        <td>{{ forloop.counter }}</td> 
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ train.train_name }}</td>
                         <td>{{ train.train_number }}</td>
                         <td>{{ train.route }}</td>
-                        <td>{{ train.Fare}}</td>
+                        <td>{{ train.Fare }}</td>
                         <td>{{ train.ac_sleeper_fare }}</td>
                         <td>{{ train.ac_standard_fare }}</td>
                         <td>{{ train.business_fare }}</td>
                         <td>{{ train.economy_fare }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8">No trains found.</td></tr>
+                    <tr>
+                        <td colspan="9">No trains found.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </section>
 
-        <!-- Add Train Fare -->
+        <hr>
+
         <section class="add-fare">
             <h3>Add Train Fare</h3>
-           <form method="POST" action="{% url 'add_fare' %}">
-    {% csrf_token %}
+            <form method="POST" action="{% url 'add_fare' %}">
+                {% csrf_token %}
+                <label for="add_train_select">Train Number:</label>
+                <select name="train" id="add_train_select" required>
+                    <option value="">--Select Train--</option>
+                    {% for t in trains %}
+                    <option value="{{ t.train_number }}">{{ t.train_name }} ({{ t.train_number }})</option>
+                    {% endfor %}
+                </select>
 
-    <label for="train">Train Number:</label>
-    <select name="train" required>
-        <option value="">--Select Train--</option>
-        {% for t in trains %}
-        <option value="{{ t.train_number }}">{{ t.train_name }} ({{ t.train_number }})</option>
-        {% endfor %}
-    </select>
+                <label>Fare Per Person:</label>
+                <input type="number" name="Fare" step="0.01" required placeholder="Enter Fare Per Person"
+                    oninput="validateFare(this)">
 
-    <label>Fare Per Person:</label>
-    <input type="number" name="Fare" step="0.01" required placeholder="Enter Fare Per Person"><br>
-    <label>Economy Fare:</label>
-    <input type="number" name="economy_fare" step="0.01" required placeholder="Enter Economy Class Fare"><br>
+                <label>Economy Fare:</label>
+                <input type="number" name="economy_fare" step="0.01" required placeholder="Enter Economy Class Fare"
+                    oninput="validateFare(this)">
 
-    <label>Business Fare:</label>
-    <input type="number" name="business_fare" step="0.01" required placeholder="Enter Business Class Fare"><br>
+                <label>Business Fare:</label>
+                <input type="number" name="business_fare" step="0.01" required placeholder="Enter Business Class Fare"
+                    oninput="validateFare(this)">
 
-    <label>AC Standard Fare:</label>
-    <input type="number" name="ac_standard_fare" step="0.01" required placeholder="Enter AC_Standard Class Fare"><br>
+                <label>AC Standard Fare:</label>
+                <input type="number" name="ac_standard_fare" step="0.01" required
+                    placeholder="Enter AC_Standard Class Fare" oninput="validateFare(this)">
 
-    <label>AC Sleeper Fare:</label>
-    <input type="number" name="ac_sleeper_fare" step="0.01" required placeholder="Enter AC_Sleeper Class Fare"><br>
+                <label>AC Sleeper Fare:</label>
+                <input type="number" name="ac_sleeper_fare" step="0.01" required
+                    placeholder="Enter AC_Sleeper Class Fare" oninput="validateFare(this)">
 
-    <button type="submit">Save All Fares</button>
-</form>
-
+                <button type="submit">Save All Fares</button>
+            </form>
         </section>
 
-        <!-- Update Train Fare -->
+        <hr>
+
         <section class="update-fare">
             <h3>Update Train Fare</h3>
             <form method="POST" action="{% url 'update_fare' %}">
                 {% csrf_token %}
-                   <label for="train">Train Number:</label>
-    <select name="train" required>
-        <option value="">--Select Train Number--</option>
-        {% for t in trains %}
-        <option value="{{ t.train_number }}">({{ t.train_number }})</option>
-        {% endfor %}
-    </select>
+                <label for="update_train_select">Train Number:</label>
+                <select name="train" id="update_train_select" required onchange="populateUpdateForm()">
+                    <option value="">--Select Train Number--</option>
+                    {% for t in trains %}
+                    <option value="{{ t.train_number }}" data-fare="{{ t.Fare|default_if_none:'' }}"
+                        data-economy="{{ t.economy_fare|default_if_none:'' }}"
+                        data-business="{{ t.business_fare|default_if_none:'' }}"
+                        data-ac-standard="{{ t.ac_standard_fare|default_if_none:'' }}"
+                        data-ac-sleeper="{{ t.ac_sleeper_fare|default_if_none:'' }}">
+                        {{ t.train_name }} ({{ t.train_number }})
+                    </option>
+                    {% endfor %}
+                </select>
 
-                <label for="fare">Fare Per Person:</label>
-                <input type="number" name="fare">
+                <label for="update_fare">Fare Per Person:</label>
+                <input type="number" name="fare" id="update_fare" step="0.01" oninput="validateFare(this)">
 
-                <label>Economy Fare (PKR):</label>
-                <input type="number" name="economy_fare">
+                <label for="update_economy_fare">Economy Fare (PKR):</label>
+                <input type="number" name="economy_fare" id="update_economy_fare" step="0.01"
+                    oninput="validateFare(this)">
 
-                <label>Business Fare (PKR):</label>
-                <input type="number" name="business_fare">
+                <label for="update_business_fare">Business Fare (PKR):</label>
+                <input type="number" name="business_fare" id="update_business_fare" step="0.01"
+                    oninput="validateFare(this)">
 
-                <label>AC Standard Fare (PKR):</label>
-                <input type="number" name="ac_standard_fare">
+                <label for="update_ac_standard_fare">AC Standard Fare (PKR):</label>
+                <input type="number" name="ac_standard_fare" id="update_ac_standard_fare" step="0.01"
+                    oninput="validateFare(this)">
 
-                <label>AC Sleeper Fare (PKR):</label>
-                <input type="number" name="ac_sleeper_fare">
+                <label for="update_ac_sleeper_fare">AC Sleeper Fare (PKR):</label>
+                <input type="number" name="ac_sleeper_fare" id="update_ac_sleeper_fare" step="0.01"
+                    oninput="validateFare(this)">
 
                 <button type="submit">Update All Fare</button>
             </form>
         </section>
     </div>
-<script>
-    window.onload = function() {
-        if (performance.navigation.type === 1) {
-        } else {
-            setTimeout(function() {
-                location.reload();
-            }, 100); 
+
+    <script>
+        function validateFare(input) {
+            if (parseFloat(input.value) < 0) {
+                input.value = 0;
+            }
+
+            const maxFare = 5000;
+            if (parseFloat(input.value) > maxFare) {
+                input.value = maxFare;
+            }
         }
-    }
-</script>
+        
+
+        function populateUpdateForm() {
+            const selectElement = document.getElementById('update_train_select');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('update_fare').value = selectedOption.getAttribute('data-fare') || '';
+                document.getElementById('update_economy_fare').value = selectedOption.getAttribute('data-economy') || '';
+                document.getElementById('update_business_fare').value = selectedOption.getAttribute('data-business') || '';
+                document.getElementById('update_ac_standard_fare').value = selectedOption.getAttribute('data-ac-standard') || '';
+                document.getElementById('update_ac_sleeper_fare').value = selectedOption.getAttribute('data-ac-sleeper') || '';
+            } else {
+                document.getElementById('update_fare').value = '';
+                document.getElementById('update_economy_fare').value = '';
+                document.getElementById('update_business_fare').value = '';
+                document.getElementById('update_ac_standard_fare').value = '';
+                document.getElementById('update_ac_sleeper_fare').value = '';
+            }
+        }
+        function showToast(elementId) {
+            const toastElement = document.getElementById(elementId);
+            if (toastElement) {
+                toastElement.classList.add('show');
+                setTimeout(() => {
+                    toastElement.classList.remove('show');
+                    setTimeout(() => { toastElement.remove(); }, 500);
+                }, 3000);
+            }
+        }
+        window.onload = function () {
+            const toastElements = document.querySelectorAll('.toast');
+            toastElements.forEach(toast => { showToast(toast.id); });
+        }
+    </script>
 </body>
+
 </html>
